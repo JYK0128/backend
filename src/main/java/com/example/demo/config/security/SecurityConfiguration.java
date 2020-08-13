@@ -2,6 +2,7 @@ package com.example.demo.config.security;
 
 import com.example.demo.config.security.filter.JwtAuthenticationFilter;
 import com.example.demo.config.security.filter.JwtAuthorizationFilter;
+import com.example.demo.config.security.filter.JwtLogoutSuccessHandler;
 import com.example.demo.service.ApplicationUserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
@@ -39,15 +40,18 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
                 .csrf().disable()
                 .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS);
         http
-                .addFilter(new JwtAuthenticationFilter(authenticationManager(), passwordEncoder));
-//                .addFilter(new JwtAuthorizationFilter(authenticationManager()));
+                .addFilter(new JwtAuthenticationFilter(authenticationManager(), passwordEncoder))
+                .addFilterAfter(new JwtAuthorizationFilter(authenticationManager()), JwtAuthenticationFilter.class);
         http
                 .authorizeRequests()
                 .antMatchers("/", "/login").permitAll()
+                .antMatchers("/.~~spring-boot!~/restart").anonymous()
                 .antMatchers("/member").hasAnyRole("ADMIN", "USER")
+                .antMatchers("/member/search").permitAll()
                 .antMatchers("/member/**").hasAnyAuthority("ALL:READ", "USER:READ")
                 .anyRequest()
                 .authenticated();
+        http.logout().logoutSuccessHandler(new JwtLogoutSuccessHandler());
     }
 
     @Override

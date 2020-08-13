@@ -29,7 +29,8 @@ public class ApplicationUserService implements UserDetailsService {
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        Member member = memberRepository.findByUsername(username).orElseThrow(() -> new UsernameNotFoundException(String.format("Username %s not found", username)));
+        Member member = memberRepository.findByUsername(username).orElseThrow();
+//                .orElseThrow(() -> new UsernameNotFoundException(String.format("Username %s not found", username)));
         Collection<? extends GrantedAuthority> grantedAuthorities = getAuthorities(Set.of(member.getRole()));
         UserDetails userDetails = User.withUserDetails(member).authorities(grantedAuthorities).build();
         return userDetails;

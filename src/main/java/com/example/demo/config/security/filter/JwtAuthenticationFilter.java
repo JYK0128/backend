@@ -1,28 +1,29 @@
 package com.example.demo.config.security.filter;
 
 import com.example.demo.config.security.JwtProperties;
-import com.example.demo.config.security.PasswordConfiguration;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import io.jsonwebtoken.Header;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Import;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
-import org.springframework.stereotype.Component;
 
 import javax.servlet.FilterChain;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.sql.Timestamp;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.ZoneId;
+import java.time.ZoneOffset;
 import java.util.Date;
+import java.util.Map;
 
 public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilter {
     private final AuthenticationManager authenticationManager;
@@ -58,16 +59,19 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
                                             HttpServletResponse response,
                                             FilterChain chain,
                                             Authentication authResult) throws IOException, ServletException {
-        LocalDate nowDate = LocalDate.now();
-        LocalDate expirationDate = nowDate.plusDays(JwtProperties.EXPIRATION_AFTER_DAYS);
+        LocalDateTime nowDateTime = LocalDateTime.now();
+        LocalDateTime expirationDate = nowDateTime.plusDays(JwtProperties.EXPIRATION_AFTER_DAYS);
+
+        Header header = Jwts.header().setType("JWT");
         String token = Jwts.builder()
+                .setHeader((Map<String, Object>) header)
                 .setSubject(authResult.getName())
                 .claim("authorities", authResult.getAuthorities())
-                .setIssuedAt(Date.from(nowDate.atStartOfDay(ZoneId.systemDefault()).toInstant()))
-                .setExpiration(java.sql.Date.valueOf(expirationDate))
-                .signWith(JwtProperties.SECRET_KEY, SignatureAlgorithm.HS256)
+                .setIssuedAt(Date.from(nowDateTime.atZone(ZoneOffset.systemDefault()).toInstant()))
+                .setExpiration(Timestamp.valueOf(expirationDate))
+                .signWith(JwtProperties.SECRET_KEY)
                 .compact();
 
-        response.addHeader(JwtProperties.HEADER_STRING, JwtProperties.TOKEN_PREFIX + token);
+        response.addHeader(JwtProperties.AUTHORIZATION_HEADER, JwtProperties.TOKEN_PREFIX + token);
     }
 }

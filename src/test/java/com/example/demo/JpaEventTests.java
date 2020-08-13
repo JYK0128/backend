@@ -1,20 +1,17 @@
 package com.example.demo;
 
-import com.example.demo.domain.Authority;
 import com.example.demo.domain.Member;
-import com.example.demo.domain.Role;
 import com.example.demo.repository.AuthorityRepository;
 import com.example.demo.repository.MemberRepository;
 import com.example.demo.repository.RoleRepository;
+import com.example.demo.service.ApplicationUserService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.data.domain.Example;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.transaction.annotation.Transactional;
+import static org.junit.jupiter.api.Assertions.*;
 
-import javax.annotation.PostConstruct;
-import java.util.*;
-import java.util.stream.Collectors;
 
 //@DataJpaTest
 //@Import({PasswordConfiguration.class, DefaultProperties.class})
@@ -119,7 +116,19 @@ public class JpaEventTests {
     @Test
     @Transactional
     void test5(){
-            Member member = Member.builder().username("user").password("user").build();
-            memberRepository.findByUsername("user").orElseGet(()->memberRepository.save(member));
+        Member member = Member.builder().username("user").password("user").build();
+        memberRepository.findByUsername("user").orElseThrow();
+        System.out.println(member);
+    }
+
+    @Autowired
+    ApplicationUserService applicationUserService;
+
+    @Test
+    @Transactional
+    void test6(){
+        UserDetails member = applicationUserService.loadUserByUsername("user");
+        System.out.println("testtttttttttttt" + member.toString());
+        assertNotNull(member);
     }
 }
