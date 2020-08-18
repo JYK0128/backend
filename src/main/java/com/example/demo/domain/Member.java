@@ -8,6 +8,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 import javax.persistence.*;
 import java.time.LocalDate;
 import java.util.Collection;
+import java.util.Set;
 
 @Getter @Setter
 @NoArgsConstructor
@@ -15,7 +16,7 @@ import java.util.Collection;
 @Builder
 @Entity
 @EntityListeners(MemberEventHandler.class)
-@EqualsAndHashCode(exclude = {"role"})
+@EqualsAndHashCode(exclude = {"role", "articles", "comments"})
 public class Member implements UserDetails {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private @Id Long id;
@@ -28,6 +29,10 @@ public class Member implements UserDetails {
 
     @ManyToOne
     private Role role;
+    @OneToMany(mappedBy = "member")
+    private Set<Article> articles;
+    @OneToMany(mappedBy = "member")
+    private Set<Comment> comments;
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() { return role.getAuthorities(); }
