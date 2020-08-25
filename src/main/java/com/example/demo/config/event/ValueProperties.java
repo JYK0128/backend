@@ -1,13 +1,11 @@
 package com.example.demo.config.event;
 
-import com.example.demo.domain.Authority;
-import com.example.demo.domain.Role;
-import com.example.demo.repository.AuthorityRepository;
-import com.example.demo.repository.RoleRepository;
+import com.example.demo.domain.member.Authority;
+import com.example.demo.domain.member.Role;
+import com.example.demo.repository.member.AuthorityRepository;
+import com.example.demo.repository.member.RoleRepository;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Lazy;
 import org.springframework.data.domain.Example;
-import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.PostConstruct;

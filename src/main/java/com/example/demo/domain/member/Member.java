@@ -1,6 +1,8 @@
-package com.example.demo.domain;
+package com.example.demo.domain.member;
 
-import com.example.demo.event.MemberEventHandler;
+import com.example.demo.domain.board.Post;
+import com.example.demo.domain.board.Message;
+import com.example.demo.event.member.MemberEventHandler;
 import lombok.*;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -16,7 +18,7 @@ import java.util.Set;
 @Builder
 @Entity
 @EntityListeners(MemberEventHandler.class)
-@EqualsAndHashCode(exclude = {"role", "articles", "comments"})
+@EqualsAndHashCode(exclude = {"role", "articles", "messages"})
 public class Member implements UserDetails {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private @Id Long id;
@@ -30,9 +32,9 @@ public class Member implements UserDetails {
     @ManyToOne
     private Role role;
     @OneToMany(mappedBy = "member")
-    private Set<Article> articles;
+    private Set<Post> posts;
     @OneToMany(mappedBy = "member")
-    private Set<Comment> comments;
+    private Set<Message> messages;
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() { return role.getAuthorities(); }

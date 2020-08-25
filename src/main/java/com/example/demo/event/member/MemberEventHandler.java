@@ -1,11 +1,11 @@
-package com.example.demo.event;
+package com.example.demo.event.member;
 
 import com.example.demo.config.event.ValueProperties;
-import com.example.demo.domain.Member;
-import com.example.demo.domain.Authority;
-import com.example.demo.domain.Role;
-import com.example.demo.repository.AuthorityRepository;
-import com.example.demo.repository.RoleRepository;
+import com.example.demo.domain.member.Member;
+import com.example.demo.domain.member.Authority;
+import com.example.demo.domain.member.Role;
+import com.example.demo.repository.member.AuthorityRepository;
+import com.example.demo.repository.member.RoleRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Import;
 import org.springframework.data.domain.Example;

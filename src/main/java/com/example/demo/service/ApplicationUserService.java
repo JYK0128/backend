@@ -1,9 +1,8 @@
 package com.example.demo.service;
 
-import com.example.demo.domain.Authority;
-import com.example.demo.domain.Member;
-import com.example.demo.domain.Role;
-import com.example.demo.repository.MemberRepository;
+import com.example.demo.domain.member.Member;
+import com.example.demo.domain.member.Role;
+import com.example.demo.repository.member.MemberRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -14,9 +13,7 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
 import java.util.Collection;
-import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;

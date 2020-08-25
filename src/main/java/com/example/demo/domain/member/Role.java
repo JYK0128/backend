@@ -1,6 +1,6 @@
-package com.example.demo.domain;
+package com.example.demo.domain.member;
 
-import com.example.demo.event.RoleEventHandler;
+import com.example.demo.event.member.RoleEventHandler;
 import lombok.*;
 import org.springframework.security.core.GrantedAuthority;
 

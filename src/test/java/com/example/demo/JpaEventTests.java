@@ -1,16 +1,17 @@
 package com.example.demo;
 
-import com.example.demo.domain.Member;
-import com.example.demo.repository.AuthorityRepository;
-import com.example.demo.repository.MemberRepository;
-import com.example.demo.repository.RoleRepository;
+import com.example.demo.domain.member.Member;
+import com.example.demo.repository.member.AuthorityRepository;
+import com.example.demo.repository.member.MemberRepository;
+import com.example.demo.repository.member.RoleRepository;
 import com.example.demo.service.ApplicationUserService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.transaction.annotation.Transactional;
-import static org.junit.jupiter.api.Assertions.*;
+
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 
 //@DataJpaTest
@@ -115,7 +116,7 @@ public class JpaEventTests {
 
     @Test
     @Transactional
-    void test5(){
+    void test5() {
         Member member = Member.builder().username("user").password("user").build();
         memberRepository.findByUsername("user").orElseThrow();
         System.out.println(member);
@@ -126,7 +127,7 @@ public class JpaEventTests {
 
     @Test
     @Transactional
-    void test6(){
+    void test6() {
         UserDetails member = applicationUserService.loadUserByUsername("user");
         System.out.println("testtttttttttttt" + member.toString());
         assertNotNull(member);
