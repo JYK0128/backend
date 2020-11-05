@@ -1,23 +1,28 @@
 package com.example.demo.domain.board;
 
-import com.example.demo.event.board.FileEventHandler;
 import lombok.*;
 
 import javax.persistence.*;
+import javax.validation.constraints.Pattern;
+import java.util.UUID;
 
-@Getter
-@Setter
+@Entity
 @NoArgsConstructor
 @AllArgsConstructor
-@Builder
-@Entity
-@EntityListeners(FileEventHandler.class)
-@EqualsAndHashCode(exclude = {"post"})
+@Getter @Setter @Builder
+@Table(
+        uniqueConstraints = {
+                @UniqueConstraint(columnNames = "uuid")
+        }
+)
 public class Upload {
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private @Id Long id;
-    private @Column String name;
+    @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+    @Pattern(regexp = "^[ㄱ-ㅎ,ㅏ-ㅣ,가-힣,\\w,\\s-]+\\.[A-Za-z]{1,}$")
+    private String oriName;
+    @Pattern(regexp = "^[a-f0-9]{8}(-[a-f0-9]{4}){4}[a-f0-9]{8}$")
+    private String uuid;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
     private Post post;
 }

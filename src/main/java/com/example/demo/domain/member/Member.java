@@ -1,49 +1,37 @@
 package com.example.demo.domain.member;
 
-import com.example.demo.domain.board.Post;
 import com.example.demo.domain.board.Message;
-import com.example.demo.event.member.MemberEventHandler;
+import com.example.demo.domain.board.Post;
 import lombok.*;
-import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.userdetails.UserDetails;
 
 import javax.persistence.*;
-import java.time.LocalDate;
-import java.util.Collection;
-import java.util.Set;
+import javax.validation.constraints.Pattern;
+import java.util.ArrayList;
+import java.util.List;
 
-@Getter @Setter
+@Entity
 @NoArgsConstructor
 @AllArgsConstructor
-@Builder
-@Entity
-@EntityListeners(MemberEventHandler.class)
-@EqualsAndHashCode(exclude = {"role", "articles", "messages"})
-public class Member implements UserDetails {
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private @Id Long id;
-    private @Column(unique = true) @NonNull String username;
-    private @Column @NonNull String password;
-    private @Column LocalDate expiredDate;
-    private @Column LocalDate lockedDate;
-    private @Column LocalDate credentialsDate;
-    private @Column boolean isUnable;
+@Getter @Setter @Builder
+@Table(
+        uniqueConstraints = {
+                @UniqueConstraint(columnNames = "email"),
+                @UniqueConstraint(columnNames = "nickname")
+        }
+)
+public class Member {
+    @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+    @Pattern(regexp = "^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\\.[a-zA-Z0-9-.]+$")
+    private String email;
+    private String nickname;
+    @Enumerated(EnumType.STRING)
+    private ProviderType provider;
 
-    @ManyToOne
-    private Role role;
-    @OneToMany(mappedBy = "member")
-    private Set<Post> posts;
-    @OneToMany(mappedBy = "member")
-    private Set<Message> messages;
-
-    @Override
-    public Collection<? extends GrantedAuthority> getAuthorities() { return role.getAuthorities(); }
-    @Override
-    public boolean isAccountNonExpired() { return (expiredDate == null) ? true : expiredDate.isBefore(LocalDate.now()); }
-    @Override
-    public boolean isAccountNonLocked() { return (lockedDate == null) ? true : lockedDate.isBefore(LocalDate.now()); }
-    @Override
-    public boolean isCredentialsNonExpired() { return (credentialsDate == null) ? true : credentialsDate.isBefore(LocalDate.now()); }
-    @Override
-    public boolean isEnabled() { return !isUnable; }
+    @Builder.Default
+    @OneToMany(mappedBy = "writer")
+    List<Message> messages = new ArrayList<>();
+    @Builder.Default
+    @OneToMany(mappedBy = "writer")
+    List<Post> posts = new ArrayList<>();
 }

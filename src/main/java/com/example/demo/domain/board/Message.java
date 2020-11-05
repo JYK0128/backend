@@ -1,26 +1,28 @@
 package com.example.demo.domain.board;
 
 import com.example.demo.domain.member.Member;
-import com.example.demo.event.board.CommentEventHandler;
 import lombok.*;
 
 import javax.persistence.*;
+import java.util.ArrayList;
+import java.util.List;
 
-@Getter
-@Setter
+@Entity
 @NoArgsConstructor
 @AllArgsConstructor
-@Builder
-@Entity
-@EntityListeners(CommentEventHandler.class)
-@EqualsAndHashCode(exclude = {"post", "article"})
+@Getter @Setter @Builder
 public class Message {
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private @Id Long id;
-    private @Column String comment;
+    @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+    private String message;
 
-    @ManyToOne
-    private Member member;
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    private Member writer;
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
     private Post post;
+    @ManyToOne(fetch = FetchType.LAZY)
+    private Message topic;
+    @Builder.Default
+    @OneToMany(mappedBy = "topic")
+    private List<Message> reply = new ArrayList<>();
 }

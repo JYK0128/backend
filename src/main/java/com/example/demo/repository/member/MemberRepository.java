@@ -1,15 +1,17 @@
 package com.example.demo.repository.member;
 
-
 import com.example.demo.domain.member.Member;
+import com.example.demo.domain.member.ProviderType;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.rest.core.annotation.RepositoryRestResource;
 
+import java.util.List;
 import java.util.Optional;
 
-@RepositoryRestResource(path="member")
+@RepositoryRestResource(path = "member")
 public interface MemberRepository extends JpaRepository<Member, Long> {
-    @Query("select m from Member m join fetch m.role r join fetch r.authorities where m.username = ?1")
-    public Optional<Member> findByUsername(String username);
+    Optional<Member> findByEmail(String email);
+    Page<Member> findAllByProvider(ProviderType providerType, Pageable pageable);
 }

@@ -1,30 +1,33 @@
 package com.example.demo.domain.board;
 
 import com.example.demo.domain.member.Member;
-import com.example.demo.event.board.ArticleEventHandler;
 import lombok.*;
 
 import javax.persistence.*;
-import java.util.Set;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 
-@Getter @Setter
+@Entity
 @NoArgsConstructor
 @AllArgsConstructor
-@Builder
-@Entity
-@EntityListeners(ArticleEventHandler.class)
-@EqualsAndHashCode(exclude = {"member", "uploads", "messages"})
+@Getter @Setter @Builder
 public class Post {
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private @Id Long id;
-    private @Column String tag;
-    private @Column String title;
-    private @Column String content;
+    @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+    private String tag;
+    private String title;
+    private String content;
+    private LocalDateTime date;
+    private Long view;
 
-    @ManyToOne
-    private Member member;
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    private Member writer;
+    @Builder.Default
     @OneToMany(mappedBy = "post")
-    private Set<Upload> uploads;
+    private List<Message> messages = new ArrayList<>();
+    @Builder.Default
     @OneToMany(mappedBy = "post")
-    private Set<Message> messages;
+    private List<Upload> uploads = new ArrayList<>();
 }
