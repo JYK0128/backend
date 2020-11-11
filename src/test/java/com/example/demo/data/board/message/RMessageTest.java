@@ -7,17 +7,16 @@ import com.example.demo.repository.board.MessageRepository;
 import com.example.demo.repository.board.PostRepository;
 import com.example.demo.repository.member.MemberRepository;
 import com.google.common.collect.Lists;
-import org.junit.jupiter.api.*;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Nested;
+import org.junit.jupiter.api.Tag;
+import org.junit.jupiter.api.TestInstance;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 
 import javax.persistence.EntityManager;
-import javax.persistence.Query;
-import javax.persistence.TransactionRequiredException;
 import java.util.ArrayList;
 import java.util.List;
-
-import static org.junit.jupiter.api.Assertions.*;
 
 @DataJpaTest
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
@@ -43,7 +42,7 @@ public class RMessageTest {
     void setUp(){
         Member member = memberRepository.save(new Member());
         Member replier = memberRepository.save(new Member());
-        Post post = Post.builder().member(member).build();
+        Post post = Post.builder().writer(member).build();
         post = postRepository.save(post);
 
         Message l1 = null;
@@ -54,7 +53,7 @@ public class RMessageTest {
         for (int i = 0; i<10; i++){
             Message.MessageBuilder messageBuilder = Message.builder()
                     .post(post)
-                    .member(replier)
+                    .writer(replier)
                     .message("message" + i);
 
             switch (i%3){

@@ -10,15 +10,14 @@ import org.junit.jupiter.api.TestInstance;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.*;
-import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.mock;
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
-public class DUploadTest {
+public class EUploadTest {
     final Upload upload;
 
 
-    public DUploadTest() {
+    public EUploadTest() {
         Post post = mock(Post.class);
 
         this.upload = Upload.builder()

@@ -11,23 +11,20 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
 
 import static org.assertj.core.api.Assertions.*;
-import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.mock;
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
-public class DPostTest {
+public class EPostTest {
     final Post post;
 
 
-    public DPostTest() {
+    public EPostTest() {
         Upload upload = mock(Upload.class);
         Message message = mock(Message.class);
         Member member = mock(Member.class);
+
         this.post = Post.builder()
                 .id((long) 1)
                 .tag("tag")
@@ -36,7 +33,7 @@ public class DPostTest {
                 .view((long) 10)
                 .content("test")
 
-                .member(member)
+                .writer(member)
                 .messages(Lists.newArrayList(message))
                 .uploads(Lists.newArrayList(upload))
                 .build();

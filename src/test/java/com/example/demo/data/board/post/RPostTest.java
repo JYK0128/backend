@@ -69,7 +69,7 @@ public class RPostTest {
                                 .view((long) i)
                                 .content("content" + i)
 
-                                .member(member)
+                                .writer(member)
                                 .build()
                 ).collect(Collectors.toList()));
 
@@ -83,7 +83,7 @@ public class RPostTest {
                 IntStream.range(0, 100).mapToObj(i ->
                         Message.builder()
                                 .post(posts.get(i))
-                                .member(replier)
+                                .writer(replier)
                                 .build()
                 ).collect(Collectors.toList()));
     }
@@ -99,7 +99,7 @@ public class RPostTest {
             Page<Post> posts = postRepository.findAllByTag("tag1", pageRequest);
 
             assertThat(posts).allSatisfy(post ->
-                    assertTrue(post.getTag().equals("tag1"))
+                    assertEquals(post.getTag(), "tag1")
             );
         }
     }

@@ -42,7 +42,7 @@ public class RUploadTest {
     @BeforeAll
     void setUp(){
         Member member = memberRepository.save(new Member());
-        Post post = postRepository.save(Post.builder().member(member).build());
+        Post post = postRepository.save(Post.builder().writer(member).build());
         uploadRepository.saveAll(
                 IntStream.range(0, 100).mapToObj(i ->
                         Upload.builder()

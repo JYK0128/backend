@@ -7,7 +7,7 @@ import org.junit.runner.RunWith;
 
 @RunWith(JUnitPlatform.class)
 @SelectPackages("com.example.demo.data")
-@IncludeTags("constraint")
-public class ConstraintTestSuite {
+@IncludeTags("query")
+public class QueryTestSuite {
 
 }

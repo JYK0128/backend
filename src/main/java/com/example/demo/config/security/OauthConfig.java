@@ -1,28 +1,23 @@
 package com.example.demo.config.security;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManagerResolver;
-import org.springframework.security.oauth2.client.InMemoryOAuth2AuthorizedClientService;
-import org.springframework.security.oauth2.client.OAuth2AuthorizedClientService;
+import org.springframework.security.oauth2.client.*;
 import org.springframework.security.oauth2.client.registration.ClientRegistration;
 import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository;
 import org.springframework.security.oauth2.client.registration.InMemoryClientRegistrationRepository;
+import org.springframework.security.oauth2.client.web.DefaultOAuth2AuthorizedClientManager;
+import org.springframework.security.oauth2.client.web.OAuth2AuthorizedClientRepository;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.Arrays;
 import java.util.List;
-import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 @Configuration
 public class OauthConfig {
-    private static List<String> clients = Arrays.asList("google", "naver", "kakao");
-
-    @Autowired
-    MyAuthenticationProvider authenticationProvider;
-
+    //Authentication Server
     //Client Service
     @Bean
     public OAuth2AuthorizedClientService authorizedClientService() {
@@ -34,22 +29,39 @@ public class OauthConfig {
     @Bean
     public ClientRegistrationRepository clientRegistrationRepository() {
         List<ClientRegistration> registrations = Arrays.stream(AuthServerProvider.values())
-                .map(authServer -> authServer.getServer())
+                .map(AuthServerProvider::getServer)
                 .collect(Collectors.toList());
 
         return new InMemoryClientRegistrationRepository(registrations);
     }
 
+    @Bean
+    public OAuth2AuthorizedClientManager authorizedClientManager(
+            ClientRegistrationRepository clientRegistrationRepository,
+            OAuth2AuthorizedClientRepository authorizedClientRepository) {
+
+        OAuth2AuthorizedClientProvider authorizedClientProvider =
+                OAuth2AuthorizedClientProviderBuilder.builder()
+                        .authorizationCode()
+                        .build();
+
+        DefaultOAuth2AuthorizedClientManager authorizedClientManager =
+                new DefaultOAuth2AuthorizedClientManager(
+                        clientRegistrationRepository, authorizedClientRepository);
+        authorizedClientManager.setAuthorizedClientProvider(authorizedClientProvider);
+
+        return authorizedClientManager;
+    }
+
+    //ResourceServer
     //AuthenticationManager Resolver
     @Bean
     AuthenticationManagerResolver<HttpServletRequest> resolver() {
-        return request -> authenticationProvider::authenticate;
-    }
+        return request -> {
+            String token = request.getHeader("Authorization").replaceFirst("Bearer ", "");
+            String issuer = AuthServerProvider.getProvider(token);
 
-    private String getIssuer(String token){
-        if (token.startsWith("ya29")) return "google";
-        else if(token.startsWith("AAAA")) return "naver";
-        else if(Pattern.matches("^.{43}AAAF1L.{5}$", token)) return "kakao";
-        else return null;
-    }
+            return AuthServerProvider.valueOf(issuer)::authenticate;
+        };
+     }
 }

@@ -1,2 +1,4 @@
-package com.example.demo.business;public class SecurityServiceTests {
+package com.example.demo.business;
+
+public class SecurityTests {
 }
