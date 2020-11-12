@@ -1,7 +1,7 @@
 package com.example.demo.syntax;
 
+import com.example.demo.config.security.OAuthServerProvider;
 import com.example.demo.domain.member.Member;
-import com.example.demo.domain.member.ProviderType;
 import com.example.demo.repository.member.MemberRepository;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -15,8 +15,6 @@ import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
-
-import static org.junit.jupiter.api.Assertions.*;
 
 //https://ramees.tistory.com/36
 @DataJpaTest
@@ -37,23 +35,17 @@ public class PersistenceTests {
     void init(){
         this.member1 = memberRepository.saveAndFlush(Member.builder()
                 .email("test1@test.com")
-                .nickname("Origin1")
-                .provider(ProviderType.KAKAO)
+                .provider(OAuthServerProvider.KAKAO)
                 .build()
         );
         this.member2 = Member.builder()
                 .email("test2@test.com")
-                .nickname("Origin2")
-                .provider(ProviderType.KAKAO)
+                .provider(OAuthServerProvider.KAKAO)
                 .build();
     }
 
     @Test
     void relation_of_persistence_and_entity_object_test1() throws SQLException {
-        member1.setNickname("Fake1");
-
-        Member test = memberRepository.findById(member1.getId()).orElseGet(null);
-        assertEquals(test.getNickname(), "Origin1");
 
         Connection conn = dataSource.getConnection();
         Statement st = conn.createStatement();

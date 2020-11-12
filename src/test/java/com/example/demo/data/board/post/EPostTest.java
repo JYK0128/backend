@@ -29,8 +29,8 @@ public class EPostTest {
                 .id((long) 1)
                 .tag("tag")
                 .title("title")
-                .date(LocalDateTime.now())
-                .view((long) 10)
+                .update(LocalDateTime.now())
+                .views((long) 10)
                 .content("test")
 
                 .writer(member)

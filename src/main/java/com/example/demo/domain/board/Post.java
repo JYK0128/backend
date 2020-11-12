@@ -19,8 +19,8 @@ public class Post {
     private String tag;
     private String title;
     private String content;
-    private LocalDateTime date;
-    private Long view;
+    private LocalDateTime update;
+    private Long views;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     private Member writer;

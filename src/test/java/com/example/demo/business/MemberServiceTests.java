@@ -1,7 +1,7 @@
 package com.example.demo.business;
 
+import com.example.demo.config.security.OAuthServerProvider;
 import com.example.demo.domain.member.Member;
-import com.example.demo.domain.member.ProviderType;
 import com.example.demo.repository.member.MemberRepository;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,8 +21,7 @@ public class MemberServiceTests {
         this.memberRepository = memberRepository;
         this.member = Member.builder()
                 .email("test@test.com")
-                .nickname("test")
-                .provider(ProviderType.KAKAO)
+                .provider(OAuthServerProvider.KAKAO)
                 .build();
     }
 

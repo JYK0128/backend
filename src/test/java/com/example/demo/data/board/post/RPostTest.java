@@ -65,8 +65,8 @@ public class RPostTest {
                         Post.builder()
                                 .tag("tag" + (i % 3))
                                 .title("title" + i)
-                                .date(LocalDateTime.now())
-                                .view((long) i)
+                                .update(LocalDateTime.now())
+                                .views((long) i)
                                 .content("content" + i)
 
                                 .writer(member)

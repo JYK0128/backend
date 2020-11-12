@@ -12,15 +12,23 @@ import org.springframework.security.oauth2.client.endpoint.DefaultAuthorizationC
 import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository;
 import org.springframework.security.oauth2.client.web.DefaultOAuth2AuthorizationRequestResolver;
 
+import javax.servlet.http.HttpServletRequest;
+
 @Configuration
 @EnableWebSecurity
 public class SecurityConfig extends WebSecurityConfigurerAdapter {
-    @Autowired
     private ClientRegistrationRepository clientRegistrationRepository;
-    @Autowired
     private OAuth2AuthorizedClientService authorizedClientService;
+    private AuthenticationManagerResolver<HttpServletRequest> authenticationManagerResolver;
+
     @Autowired
-    private AuthenticationManagerResolver resolver;
+    SecurityConfig(ClientRegistrationRepository clientRegistrationRepository,
+                   OAuth2AuthorizedClientService authorizedClientService,
+                   AuthenticationManagerResolver<HttpServletRequest> authenticationManagerResolver){
+        this.clientRegistrationRepository = clientRegistrationRepository;
+        this.authorizedClientService = authorizedClientService;
+        this.authenticationManagerResolver = authenticationManagerResolver;
+    }
 
     @Override
     protected void configure(HttpSecurity http) throws Exception {
@@ -39,7 +47,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     }
 
     private void customFilterConfig(HttpSecurity http) throws Exception {
-//        http.addFilter(Filter);
+//        http.addFilter(filter);
     }
 
     private void authorizationConfig(HttpSecurity http) throws Exception {
@@ -63,7 +71,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
         //resource
         http.oauth2ResourceServer(oauth2 -> oauth2
-                .authenticationManagerResolver(resolver)
+                .authenticationManagerResolver(authenticationManagerResolver)
         );
     }
 }

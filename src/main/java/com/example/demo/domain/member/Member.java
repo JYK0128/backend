@@ -1,5 +1,6 @@
 package com.example.demo.domain.member;
 
+import com.example.demo.config.security.OAuthServerProvider;
 import com.example.demo.domain.board.Message;
 import com.example.demo.domain.board.Post;
 import lombok.*;
@@ -16,7 +17,6 @@ import java.util.List;
 @Table(
         uniqueConstraints = {
                 @UniqueConstraint(columnNames = "email"),
-                @UniqueConstraint(columnNames = "nickname")
         }
 )
 public class Member {
@@ -24,9 +24,8 @@ public class Member {
     private Long id;
     @Pattern(regexp = "^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\\.[a-zA-Z0-9-.]+$")
     private String email;
-    private String nickname;
     @Enumerated(EnumType.STRING)
-    private ProviderType provider;
+    private OAuthServerProvider provider;
 
     @Builder.Default
     @OneToMany(mappedBy = "writer")

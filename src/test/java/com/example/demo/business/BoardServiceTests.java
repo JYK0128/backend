@@ -1,10 +1,10 @@
 package com.example.demo.business;
 
+import com.example.demo.config.security.OAuthServerProvider;
 import com.example.demo.domain.board.Message;
 import com.example.demo.domain.board.Post;
 import com.example.demo.domain.board.Upload;
 import com.example.demo.domain.member.Member;
-import com.example.demo.domain.member.ProviderType;
 import com.example.demo.repository.board.MessageRepository;
 import com.example.demo.repository.board.PostRepository;
 import com.example.demo.repository.board.UploadRepository;
@@ -50,20 +50,18 @@ public class BoardServiceTests {
     void setUp() {
         preDefinedWriterBuilder = Member.builder()
                 .email("test1@test.com")
-                .nickname("test1")
-                .provider(ProviderType.KAKAO);
+                .provider(OAuthServerProvider.KAKAO);
 
         preDefinedReplierBuilder = Member.builder()
                 .email("test2@test.com")
-                .nickname("test2")
-                .provider(ProviderType.GOOGLE);
+                .provider(OAuthServerProvider.GOOGLE);
 
         preDefinedPostBuilder = Post.builder()
                 .tag("test")
                 .title("hello")
                 .content("write post")
-                .date(LocalDateTime.now())
-                .view((long) 0);
+                .update(LocalDateTime.now())
+                .views((long) 0);
     }
 
     @Test
@@ -145,12 +143,12 @@ public class BoardServiceTests {
         post = postRepository.save(post);
 
         //when
-        long view = post.getView() + 1;
-        post.setView(view);
+        long view = post.getViews() + 1;
+        post.setViews(view);
         postRepository.save(post);
 
         //then
-        assertThat(post.getView()).isEqualTo(view);
+        assertThat(post.getViews()).isEqualTo(view);
     }
 
     @Test

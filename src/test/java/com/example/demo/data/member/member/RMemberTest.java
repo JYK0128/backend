@@ -1,7 +1,7 @@
 package com.example.demo.data.member.member;
 
+import com.example.demo.config.security.OAuthServerProvider;
 import com.example.demo.domain.member.Member;
-import com.example.demo.domain.member.ProviderType;
 import com.example.demo.repository.member.MemberRepository;
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -23,7 +23,6 @@ import static org.junit.jupiter.api.Assertions.*;
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 public class RMemberTest {
     final String emailFormat = "test%d@test.com";
-    final String nickNameFormat = "test%d";
 
     final EntityManagerFactory entityManagerFactory;
     final MemberRepository memberRepository;
@@ -40,8 +39,7 @@ public class RMemberTest {
                 IntStream.range(0, 100).mapToObj(i ->
                         Member.builder()
                                 .email(String.format(emailFormat, i))
-                                .nickname(String.format(nickNameFormat, i))
-                                .provider(ProviderType.values()[i % 3])
+                                .provider(OAuthServerProvider.values()[i % 3])
                                 .build()
                 ).collect(Collectors.toList())
         );
@@ -57,15 +55,15 @@ public class RMemberTest {
         }
 
         @ParameterizedTest
-        @EnumSource(ProviderType.class)
-        void find_all_by_provider(ProviderType providerType) {
+        @EnumSource(OAuthServerProvider.class)
+        void find_all_by_provider(OAuthServerProvider provider) {
             int page = 1;
             int size = 10;
             PageRequest pageRequest = PageRequest.of(page, size);
-            Page<Member> members = memberRepository.findAllByProvider(providerType, pageRequest);
+            Page<Member> members = memberRepository.findAllByProvider(provider, pageRequest);
 
             assertThat(members).allSatisfy(m ->
-                    assertEquals(providerType, m.getProvider())
+                    assertEquals(provider, m.getProvider())
             );
         }
     }

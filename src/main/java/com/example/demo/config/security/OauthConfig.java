@@ -1,5 +1,6 @@
 package com.example.demo.config.security;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManagerResolver;
@@ -17,6 +18,13 @@ import java.util.stream.Collectors;
 
 @Configuration
 public class OauthConfig {
+    OauthUserService oauthUserService;
+
+    @Autowired
+    OauthConfig(OauthUserService oauthUserService){
+        this.oauthUserService = oauthUserService;
+    }
+
     //Authentication Server
     //Client Service
     @Bean
@@ -28,8 +36,8 @@ public class OauthConfig {
     //Client Repository
     @Bean
     public ClientRegistrationRepository clientRegistrationRepository() {
-        List<ClientRegistration> registrations = Arrays.stream(AuthServerProvider.values())
-                .map(AuthServerProvider::getServer)
+        List<ClientRegistration> registrations = Arrays.stream(OAuthServerProvider.values())
+                .map(OAuthServerProvider::getServer)
                 .collect(Collectors.toList());
 
         return new InMemoryClientRegistrationRepository(registrations);
@@ -57,11 +65,6 @@ public class OauthConfig {
     //AuthenticationManager Resolver
     @Bean
     AuthenticationManagerResolver<HttpServletRequest> resolver() {
-        return request -> {
-            String token = request.getHeader("Authorization").replaceFirst("Bearer ", "");
-            String issuer = AuthServerProvider.getProvider(token);
-
-            return AuthServerProvider.valueOf(issuer)::authenticate;
-        };
+        return request -> oauthUserService::authenticate;
      }
 }

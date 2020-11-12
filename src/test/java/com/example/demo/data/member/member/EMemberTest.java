@@ -1,9 +1,9 @@
 package com.example.demo.data.member.member;
 
+import com.example.demo.config.security.OAuthServerProvider;
 import com.example.demo.domain.board.Message;
 import com.example.demo.domain.board.Post;
 import com.example.demo.domain.member.Member;
-import com.example.demo.domain.member.ProviderType;
 import com.google.common.collect.Lists;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Tag;
@@ -23,8 +23,7 @@ public class EMemberTest {
         this.member = Member.builder()
                 .id((long) 1)
                 .email("test@test.com")
-                .nickname("test")
-                .provider(ProviderType.KAKAO)
+                .provider(OAuthServerProvider.KAKAO)
 
                 .posts(Lists.newArrayList(post))
                 .messages(Lists.newArrayList(message))
