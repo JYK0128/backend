@@ -18,10 +18,11 @@ import java.util.UUID;
 public class Upload {
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    @Pattern(regexp = "^[ㄱ-ㅎ,ㅏ-ㅣ,가-힣,\\w,\\s-]+\\.[A-Za-z]{1,}$")
+    @Pattern(regexp = "^[ㄱ-ㅎ,ㅏ-ㅣ가-힣\\w\\s-]+\\.[A-Za-z]{1,}$")
     private String oriName;
     @Pattern(regexp = "^[a-f0-9]{8}(-[a-f0-9]{4}){4}[a-f0-9]{8}$")
-    private String uuid;
+    @Builder.Default
+    private String uuid = UUID.randomUUID().toString();
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     private Post post;

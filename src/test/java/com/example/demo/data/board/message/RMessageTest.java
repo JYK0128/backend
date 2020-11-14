@@ -66,7 +66,7 @@ public class RMessageTest {
                     l2 = messageBuilder
                             .topic(l1)
                             .build();
-                    l1.setReply(Lists.newArrayList(l2));
+                    l1.setReplies(Lists.newArrayList(l2));
                     messages.add(l2);
                     break;
                 }
@@ -74,7 +74,7 @@ public class RMessageTest {
                     l3 = messageBuilder
                             .topic(l2)
                             .build();
-                    l2.setReply(Lists.newArrayList(l3));
+                    l2.setReplies(Lists.newArrayList(l3));
                     messages.add(l3);
                     break;
                 }

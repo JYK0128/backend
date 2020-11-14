@@ -34,8 +34,8 @@ public class EPostTest {
                 .content("test")
 
                 .writer(member)
-                .messages(Lists.newArrayList(message))
-                .uploads(Lists.newArrayList(upload))
+                .messages(Lists.newArrayList())
+                .uploads(Lists.newArrayList())
                 .build();
     }
 

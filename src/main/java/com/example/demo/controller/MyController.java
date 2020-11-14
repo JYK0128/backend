@@ -2,18 +2,15 @@ package com.example.demo.controller;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.client.OAuth2AuthorizeRequest;
 import org.springframework.security.oauth2.client.OAuth2AuthorizedClient;
 import org.springframework.security.oauth2.client.OAuth2AuthorizedClientManager;
-import org.springframework.security.oauth2.core.OAuth2AccessToken;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import java.security.Principal;
-import java.util.Map;
 
 
 @Controller
@@ -50,10 +47,7 @@ public class MyController {
 
     @GetMapping("/oauth2/userinfo")
     @ResponseBody
-    public Map<String, Object> user(@AuthenticationPrincipal Principal principal) {
-        if (principal != null) {
-            return Map.of("name", principal.getName(), "authorities", SecurityContextHolder.getContext().getAuthentication().getAuthorities());
-        }
-        return null;
+    public Object user(@AuthenticationPrincipal Principal principal) {
+        return principal;
     }
 }

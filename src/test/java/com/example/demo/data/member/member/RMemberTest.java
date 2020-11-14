@@ -13,6 +13,7 @@ import org.springframework.data.domain.PageRequest;
 
 import javax.persistence.EntityManagerFactory;
 import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -49,14 +50,16 @@ public class RMemberTest {
     @Tag("query")
     class Query_that {
         @Test
-        void find_by_email() {
-            Optional<Member> member = memberRepository.findByEmail(String.format(emailFormat, 1));
-            assertTrue(member.isPresent());
+        void findByEmailAndProvider() {
+            String email = String.format(emailFormat, 1);
+            OAuthServerProvider provider = OAuthServerProvider.values()[1];
+            Optional<Member> member = memberRepository.findByEmailAndProvider(email, provider);
+            assertThat(member).isNotEmpty();
         }
 
         @ParameterizedTest
         @EnumSource(OAuthServerProvider.class)
-        void find_all_by_provider(OAuthServerProvider provider) {
+        void findAllByProvider(OAuthServerProvider provider) {
             int page = 1;
             int size = 10;
             PageRequest pageRequest = PageRequest.of(page, size);

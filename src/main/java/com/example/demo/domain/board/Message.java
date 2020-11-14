@@ -23,6 +23,16 @@ public class Message {
     @ManyToOne(fetch = FetchType.LAZY)
     private Message topic;
     @Builder.Default
-    @OneToMany(mappedBy = "topic")
-    private List<Message> reply = new ArrayList<>();
+    @OneToMany(mappedBy = "topic", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Message> replies = new ArrayList<>();
+
+    public void addReply(Message message) {
+        replies.add(message);
+        message.setTopic(this);
+        message.setPost(this.post);
+    }
+
+    public void deleteReply(int index) {
+        replies.remove(index);
+    }
 }

@@ -1,49 +1,80 @@
 package com.example.demo.business;
 
 import com.example.demo.config.security.OAuthServerProvider;
+import com.example.demo.domain.board.Post;
 import com.example.demo.domain.member.Member;
+import com.example.demo.repository.board.PostRepository;
 import com.example.demo.repository.member.MemberRepository;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
-import org.springframework.data.domain.Example;
+import org.springframework.test.annotation.Rollback;
+
+import javax.persistence.EntityManager;
 
 import static org.assertj.core.api.Assertions.*;
 
 @DataJpaTest
+@TestInstance(TestInstance.Lifecycle.PER_CLASS)
+@TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 public class MemberServiceTests {
-
     private final MemberRepository memberRepository;
-    private final Member member;
+    private final PostRepository postRepository;
+    private final EntityManager entityManager;
+
+    Member.MemberBuilder preDefinedMemberBuilder;
 
     @Autowired
-    MemberServiceTests(MemberRepository memberRepository) {
+    MemberServiceTests(MemberRepository memberRepository, PostRepository postRepository,
+                       EntityManager entityManager) {
+        this.entityManager = entityManager;
+        this.postRepository = postRepository;
         this.memberRepository = memberRepository;
-        this.member = Member.builder()
+    }
+
+    @BeforeAll
+    void setUp(){
+        preDefinedMemberBuilder = Member.builder()
                 .email("test@test.com")
-                .provider(OAuthServerProvider.KAKAO)
-                .build();
+                .provider(OAuthServerProvider.KAKAO);
     }
 
     @Test
+    @Order(1)
+    @Rollback(value = false)
     void signUp() {
-        //given
-        Member newMember = member;
-        //when
-        memberRepository.save(newMember);
-        //then
+        Member member = preDefinedMemberBuilder.build();
+        memberRepository.save(member);
 
-        assertThat(memberRepository.findOne(Example.of(newMember))).isPresent();
+        assertThat(entityManager.contains(member)).isTrue();
     }
 
     @Test
+    @Order(997)
+    @Rollback(value = false)
+    void beforeLeave(){
+        Member member = memberRepository.findById((long) 1).get();
+        Post post = Post.builder().writer(member).tag("test").title("title").content("content").build();
+        postRepository.save(post);
+
+        assertThat(entityManager.contains(member)).isTrue();
+        assertThat(member.getPosts().get(0)).isEqualTo(post);
+    }
+
+
+    @Test
+    @Order(998)
+    @Rollback(value = false)
     void leave() {
-        //given
-        Member member = this.member;
-        memberRepository.save(member);
-        //when
+        Member member = memberRepository.findById((long) 1).get();
         memberRepository.delete(member);
-        //then
-        assertThat(memberRepository.findOne(Example.of(member))).isEmpty();
+    }
+
+    @Test
+    @Order(999)
+    @Rollback(value = false)
+    void afterLeave() {
+        assertThat(memberRepository.findAll()).isEmpty();
+        assertThat(postRepository.findAll()).isEmpty();
     }
 }

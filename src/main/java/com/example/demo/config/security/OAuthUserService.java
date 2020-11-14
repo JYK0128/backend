@@ -24,15 +24,15 @@ import java.util.List;
 import java.util.regex.Pattern;
 
 @Service
-public class OauthUserService {
+public class OAuthUserService {
     MemberRepository memberRepository;
 
     @Autowired
-    OauthUserService(MemberRepository memberRepository){
+    OAuthUserService(MemberRepository memberRepository){
         this.memberRepository = memberRepository;
     }
 
-    public Authentication authenticate(Authentication authentication) {
+    Authentication authenticate(Authentication authentication) {
         try {
             UserDetails userDetails = this.loadUserByAuthentication(authentication);
             final Collection<? extends GrantedAuthority> authorities = userDetails.getAuthorities();
@@ -44,7 +44,7 @@ public class OauthUserService {
         }
     }
 
-    public UserDetails loadUserByAuthentication(Authentication authentication) throws URISyntaxException {
+    private UserDetails loadUserByAuthentication(Authentication authentication) throws URISyntaxException {
         String token = authentication.getPrincipal().toString();
         OAuthServerProvider provider = getProvider(token);
         URI userInfoUri = new URI(provider.getUserInfoUri());
@@ -59,7 +59,7 @@ public class OauthUserService {
         JsonNode userInfo = response.getBody();
 
         String email = userInfo.findPath("email").asText();
-        memberRepository.findByEmail(email).orElseGet(() ->
+        memberRepository.findByEmailAndProvider(email, provider).orElseGet(() ->
                 memberRepository.save(Member.builder().email(email).provider(provider).build()));
 
         List<GrantedAuthority> grantedAuthorities = AuthorityUtils.createAuthorityList("SCOPE_openid");
@@ -71,7 +71,7 @@ public class OauthUserService {
                 .build();
     }
 
-    private static OAuthServerProvider getProvider(String token){
+    private OAuthServerProvider getProvider(String token){
         if (token.startsWith("ya29.")) return OAuthServerProvider.GOOGLE;
         else if(token.startsWith("AAAAO")) return OAuthServerProvider.NAVER;
         else if(Pattern.matches("^.{43}AAAF1.{6}$", token)) return OAuthServerProvider.KAKAO;

@@ -28,7 +28,7 @@ public class EMessageTest {
                 .message("test")
 
                 .topic(topic)
-                .reply(Lists.list(reply))
+                .replies(Lists.newArrayList())
                 .post(post)
                 .writer(member)
                 .build();

@@ -9,32 +9,28 @@ import com.example.demo.repository.board.MessageRepository;
 import com.example.demo.repository.board.PostRepository;
 import com.example.demo.repository.board.UploadRepository;
 import com.example.demo.repository.member.MemberRepository;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.TestInstance;
+import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
+import org.springframework.test.annotation.Rollback;
 
 import javax.persistence.EntityManager;
-import java.time.LocalDateTime;
 import java.util.Arrays;
-import java.util.Collections;
-import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.*;
-import static org.junit.jupiter.api.Assertions.*;
 
 @DataJpaTest
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
+@TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 public class BoardServiceTests {
     private EntityManager entityManager;
     private final PostRepository postRepository;
     private final MemberRepository memberRepository;
     private final UploadRepository uploadRepository;
     private final MessageRepository messageRepository;
-    private Member.MemberBuilder preDefinedWriterBuilder;
-    private Member.MemberBuilder preDefinedReplierBuilder;
     private Post.PostBuilder preDefinedPostBuilder;
+
+    Member writer, replier;
 
     @Autowired
     BoardServiceTests(EntityManager entityManager, MemberRepository memberRepository,
@@ -48,297 +44,145 @@ public class BoardServiceTests {
 
     @BeforeAll
     void setUp() {
-        preDefinedWriterBuilder = Member.builder()
+        writer = Member.builder()
                 .email("test1@test.com")
-                .provider(OAuthServerProvider.KAKAO);
+                .provider(OAuthServerProvider.KAKAO)
+                .build();
 
-        preDefinedReplierBuilder = Member.builder()
+        replier = Member.builder()
                 .email("test2@test.com")
-                .provider(OAuthServerProvider.GOOGLE);
+                .provider(OAuthServerProvider.GOOGLE)
+                .build();
+
+        memberRepository.saveAll(Arrays.asList(writer, replier));
 
         preDefinedPostBuilder = Post.builder()
-                .tag("test")
-                .title("hello")
-                .content("write post")
-                .update(LocalDateTime.now())
-                .views((long) 0);
+                .tag("tag")
+                .title("title")
+                .content("content");
     }
 
     @Test
-    void create_post() {
-        //given
-        Member writer = this.preDefinedWriterBuilder.build();
-        writer = memberRepository.save(writer);
-
-        //when
-        Post post = preDefinedPostBuilder
-                .writer(writer)
-                .build();
-        post = postRepository.save(post);
-
-        Upload upload = Upload.builder()
-                .oriName("test.txt")
-                .uuid(UUID.randomUUID().toString())
-                .post(post)
-                .build();
-        upload = uploadRepository.save(upload);
-
-        entityManager.refresh(post);
-        entityManager.refresh(writer);
-
-        //then
-        assertThat(writer.getPosts()).contains(post);
-        assertThat(post.getUploads()).contains(upload);
-
-        assertThat(upload.getPost()).isEqualTo(post);
-        assertThat(post.getWriter()).isEqualTo(writer);
-    }
-
-    @Test
-    void update_post() {
-        //given
-        Member writer = this.preDefinedWriterBuilder.build();
-        writer = memberRepository.save(writer);
-
-        Post post = preDefinedPostBuilder
-                .writer(writer)
-                .build();
-        post = postRepository.save(post);
-
-        //when
-        post.setTitle("updated post");
-        post = postRepository.save(post);
-
-        //then
-        assertThat(post.getTitle()).isEqualTo("updated post");
-    }
-
-    @Test
-    void delete_post() {
-        //given
-        Member writer = this.preDefinedWriterBuilder.build();
-        writer = memberRepository.save(writer);
-
-        Post post = preDefinedPostBuilder
-                .writer(writer)
-                .build();
-        post = postRepository.save(post);
-
-        //when
-        postRepository.delete(post);
-
-        //then
-        assertFalse(entityManager.contains(post));
-    }
-
-    @Test
-    void visit_post() {
-        //given
-        Member writer = this.preDefinedWriterBuilder.build();
-        writer = memberRepository.save(writer);
-
-        Post post = preDefinedPostBuilder
-                .writer(writer)
-                .build();
-        post = postRepository.save(post);
-
-        //when
-        long view = post.getViews() + 1;
-        post.setViews(view);
+    @Order(1)
+    @Rollback(value = false)
+    void writePost() {
+        Upload upload = Upload.builder().oriName("one.txt").build();
+        Post post = preDefinedPostBuilder.writer(writer).build();
+        post.addUpload(upload);
         postRepository.save(post);
 
-        //then
-        assertThat(post.getViews()).isEqualTo(view);
+        assertThat(entityManager.contains(post)).isTrue();
+        assertThat(upload.getPost()).isEqualTo(post);
     }
 
     @Test
-    void add_upload(){
-        //given
-        Member writer = this.preDefinedWriterBuilder.build();
-        writer = memberRepository.save(writer);
+    @Order(2)
+    @Rollback(value = false)
+    void addUpload() {
+        Post post = postRepository.findById((long) 1).get();
+        Upload upload = Upload.builder().oriName("two.txt").build();
+        post.addUpload(upload);
 
-        Post post = preDefinedPostBuilder
-                .writer(writer)
-                .build();
-        post = postRepository.save(post);
-
-        Upload upload = Upload.builder()
-                .oriName("test.txt")
-                .uuid(UUID.randomUUID().toString())
-                .post(post)
-                .build();
-        uploadRepository.save(upload);
-
-        //when
-        Upload newUpload = Upload.builder()
-                .oriName("newUpload")
-                .uuid(UUID.randomUUID().toString())
-                .post(post)
-                .build();
-        newUpload = uploadRepository.save(newUpload);
-
-        entityManager.refresh(post);
-
-        //then
-        assertThat(post.getUploads())
-                .hasSameElementsAs(Arrays.asList(upload, newUpload));
+        assertThat(entityManager.contains(post)).isTrue();
+        assertThat(upload.getPost()).isEqualTo(post);
     }
 
     @Test
-    void delete_upload(){
-        //given
-        Member writer = this.preDefinedWriterBuilder.build();
-        writer = memberRepository.save(writer);
+    @Order(3)
+    @Rollback(value = false)
+    void deleteUpload() {
+        Post post = postRepository.findById((long) 1).get();
+        post.deleteUpload(1);
 
-        Post post = preDefinedPostBuilder
-                .writer(writer)
-                .build();
-        post = postRepository.save(post);
-
-        Upload upload = Upload.builder()
-                .oriName("test.txt")
-                .uuid(UUID.randomUUID().toString())
-                .post(post)
-                .build();
-        upload = uploadRepository.save(upload);
-
-        Upload newUpload = Upload.builder()
-                .oriName("newUpload")
-                .uuid(UUID.randomUUID().toString())
-                .post(post)
-                .build();
-        newUpload = uploadRepository.save(newUpload);
-
-        //when
-        uploadRepository.delete(newUpload);
-        uploadRepository.flush();
-        entityManager.refresh(post);
-
-        //then
-        assertThat(post.getUploads())
-                .hasSameElementsAs(Collections.singletonList(upload));
+        assertThat(entityManager.contains(post)).isTrue();
     }
 
     @Test
-    void write_message() {
-        //given
-        Member writer = this.preDefinedWriterBuilder.build();
-        Member replier = this.preDefinedReplierBuilder.build();
-        memberRepository.saveAll(Arrays.asList(writer, replier));
+    @Order(4)
+    @Rollback(value = false)
+    void visitPost(){
+        Post post = postRepository.findById((long) 1).get();
+        post.setViews(post.getViews() + 1);
 
-        Post post = preDefinedPostBuilder.writer(writer).build();
-        post = postRepository.save(post);
-
-        //when
-        Message message = Message.builder().writer(replier).post(post).message("message").build();
-        message = messageRepository.save(message);
-
-        entityManager.refresh(post);
-
-        //then
-        assertThat(post.getMessages()).hasSameElementsAs(Collections.singletonList(message));
+        assertThat(entityManager.contains(post)).isTrue();
+        assertThat(post.getViews()).isEqualTo(1);
     }
 
     @Test
-    void write_reply() {
-        //given
-        Member writer = this.preDefinedWriterBuilder.build();
-        writer = memberRepository.save(writer);
+    @Order(5)
+    @Rollback(value = false)
+    void addMessage() {
+        Post post = postRepository.findById((long) 1).get();
+        Message topic1 = Message.builder().message("topic1").writer(replier).build();
+        Message topic2 = Message.builder().message("topic2").writer(replier).build();
+        post.addMessage(topic1);
+        post.addMessage(topic2);
 
-        Member replier = this.preDefinedReplierBuilder.build();
-        replier = memberRepository.save(replier);
-
-        Post post = preDefinedPostBuilder.writer(writer).build();
-        post = postRepository.save(post);
-
-        Message message = Message.builder().writer(replier).post(post).message("message").build();
-        message = messageRepository.save(message);
-
-        //when
-        Message reply = Message.builder().writer(writer).post(post).message("reply").topic(message).build();
-        reply = messageRepository.save(reply);
-
-        entityManager.refresh(message);
-
-        //then
-        assertThat(message.getReply()).contains(reply);
-        assertThat(reply.getTopic()).isEqualTo(message);
+        assertThat(entityManager.contains(post)).isTrue();
+        assertThat(topic1.getPost()).isEqualTo(post);
+        assertThat(topic2.getPost()).isEqualTo(post);
     }
 
     @Test
-    void update_message() {
-        //given
-        Member writer = this.preDefinedWriterBuilder.build();
-        Member replier = this.preDefinedReplierBuilder.build();
-        memberRepository.saveAll(Arrays.asList(writer, replier));
+    @Order(6)
+    @Rollback(value = false)
+    void deleteMessage() {
+        Post post = postRepository.findById((long) 1).get();
+        post.deleteMessage(1);
 
-        Post post = preDefinedPostBuilder.writer(writer).build();
-        post = postRepository.save(post);
+        assertThat(entityManager.contains(post)).isTrue();
+    }
 
-        Message message = Message.builder().writer(replier).post(post).message("message").build();
-        message = messageRepository.save(message);
 
-        entityManager.refresh(post);
+    @Test
+    @Order(7)
+    @Rollback(value = false)
+    void addReply() {
+        Post post = postRepository.findById((long) 1).get();
+        Message topic = post.getMessages().get(0);
+        Message reply1 = Message.builder().message("reply1").writer(writer).build();
+        Message reply2 = Message.builder().message("reply2").writer(writer).build();
+        topic.addReply(reply1);
+        topic.addReply(reply2);
 
-        //when
-        message.setMessage("updated message");
-        message = messageRepository.save(message);
-
-        //then
-        assertThat(message.getMessage()).isEqualTo("updated message");
+        assertThat(entityManager.contains(post)).isTrue();
+        assertThat(reply1.getTopic()).isEqualTo(topic);
+        assertThat(reply2.getTopic()).isEqualTo(topic);
     }
 
     @Test
-    void delete_message(){
-        //given
-        Member writer = this.preDefinedWriterBuilder.build();
-        Member replier = this.preDefinedReplierBuilder.build();
-        memberRepository.saveAll(Arrays.asList(writer, replier));
+    @Order(8)
+    @Rollback(value = false)
+    void deleteReply() {
+        Post post = postRepository.findById((long) 1).get();
+        Message message = post.getMessages().get(0);
+        message.deleteReply(1);
 
-        Post post = preDefinedPostBuilder.writer(writer).build();
-        post = postRepository.save(post);
-
-        Message message = Message.builder().writer(replier).post(post).message("message").build();
-        message = messageRepository.save(message);
-
-        Message reply = Message.builder().writer(writer).post(post).message("reply").topic(message).build();
-        reply = messageRepository.save(reply);
-
-        entityManager.refresh(message);
-
-        //when
-        message.setMessage("deleted message");
-        message.setWriter(null);
-        message = messageRepository.save(message);
-
-        //then
-        assertThat(reply.getTopic()).isEqualTo(message);
-        assertThat(reply.getTopic().getMessage()).isEqualTo("deleted message");
-        assertThat(reply.getTopic().getWriter()).isNull();
+        assertThat(entityManager.contains(post)).isTrue();
     }
 
     @Test
-    void delete_reply(){
-        //given
-        Member writer = this.preDefinedWriterBuilder.build();
-        Member replier = this.preDefinedReplierBuilder.build();
-        memberRepository.saveAll(Arrays.asList(writer, replier));
+    @Order(997)
+    @Rollback(value = false)
+    void beforeDeletePost() {
+        assertThat(uploadRepository.findAll().size()).isEqualTo(1);
+        assertThat(messageRepository.findAll().size()).isEqualTo(2);
+    }
 
-        Post post = preDefinedPostBuilder.writer(writer).build();
-        post = postRepository.save(post);
+    @Test
+    @Order(998)
+    @Rollback(value = false)
+    void deletePost() {
+        Post post = postRepository.findById((long) 1).get();
+        postRepository.delete(post);
+    }
 
-        Message message = Message.builder().writer(replier).post(post).message("message").build();
-        message = messageRepository.save(message);
-
-        Message reply = Message.builder().writer(writer).post(post).message("reply").topic(message).build();
-        reply = messageRepository.save(reply);
-
-        //when
-        messageRepository.delete(reply);
-        messageRepository.flush();
-        entityManager.refresh(message);
-
-        //then
-        assertThat(message.getReply()).isEmpty();
+    @Test
+    @Order(999)
+    @Rollback(value = false)
+    void afterDeletePost() {
+        assertThat(postRepository.findAll()).isEmpty();
+        assertThat(messageRepository.findAll()).isEmpty();
+        assertThat(uploadRepository.findAll()).isEmpty();
     }
 }

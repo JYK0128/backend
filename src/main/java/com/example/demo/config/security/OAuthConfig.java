@@ -17,11 +17,11 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @Configuration
-public class OauthConfig {
-    OauthUserService oauthUserService;
+public class OAuthConfig {
+    OAuthUserService oauthUserService;
 
     @Autowired
-    OauthConfig(OauthUserService oauthUserService){
+    OAuthConfig(OAuthUserService oauthUserService){
         this.oauthUserService = oauthUserService;
     }
 

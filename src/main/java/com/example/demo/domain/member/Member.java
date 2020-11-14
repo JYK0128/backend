@@ -4,6 +4,8 @@ import com.example.demo.config.security.OAuthServerProvider;
 import com.example.demo.domain.board.Message;
 import com.example.demo.domain.board.Post;
 import lombok.*;
+import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.OnDeleteAction;
 
 import javax.persistence.*;
 import javax.validation.constraints.Pattern;
@@ -28,9 +30,11 @@ public class Member {
     private OAuthServerProvider provider;
 
     @Builder.Default
+    @OnDelete(action = OnDeleteAction.CASCADE)
     @OneToMany(mappedBy = "writer")
     List<Message> messages = new ArrayList<>();
     @Builder.Default
+    @OnDelete(action = OnDeleteAction.CASCADE)
     @OneToMany(mappedBy = "writer")
     List<Post> posts = new ArrayList<>();
 }
