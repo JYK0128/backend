@@ -33,5 +33,5 @@ build/
 .vscode/
 
 ### SECRET FILES ###
-/src/main/resources/wallet/
+/src/main/resources/.wallet/
 /src/main/resources/application.properties

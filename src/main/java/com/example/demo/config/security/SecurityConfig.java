@@ -53,7 +53,8 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     private void authorizationConfig(HttpSecurity http) throws Exception {
         http
                 .authorizeRequests()
-                .antMatchers("/", "/index", "/oauth2/**").permitAll()
+                .antMatchers("/.~~spring-boot!~/restart").anonymous()
+                .antMatchers("/", "/index", "/oauth2/**", "/.well-known/**").permitAll()
                 .antMatchers("/login-success").hasAnyAuthority("SCOPE_openid")
                 .anyRequest().authenticated();
     }

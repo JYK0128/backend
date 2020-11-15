@@ -39,7 +39,6 @@ public class MyController {
                 OAuth2AuthorizeRequest.withClientRegistrationId(authServer)
                         .principal("anonymousUser")
                         .build();
-
         OAuth2AuthorizedClient authorizedClient = authorizedClientManager.authorize(authorizeRequest);
 
         return authorizedClient.getAccessToken();
