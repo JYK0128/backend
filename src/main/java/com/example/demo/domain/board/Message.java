@@ -16,7 +16,7 @@ public class Message {
     private Long id;
     private String message;
 
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @ManyToOne(fetch = FetchType.LAZY)
     private Member writer;
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     private Post post;
@@ -33,6 +33,12 @@ public class Message {
     }
 
     public void deleteReply(int index) {
-        replies.remove(index);
+        Message reply = replies.get(index);
+        if(reply.getReplies().isEmpty()){
+            replies.remove(index);
+        }else{
+            reply.setWriter(null);
+            reply.setMessage("deleted topic");
+        }
     }
 }
