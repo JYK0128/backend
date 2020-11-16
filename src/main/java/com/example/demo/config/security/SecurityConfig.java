@@ -1,6 +1,7 @@
 package com.example.demo.config.security;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManagerResolver;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -11,6 +12,9 @@ import org.springframework.security.oauth2.client.OAuth2AuthorizedClientService;
 import org.springframework.security.oauth2.client.endpoint.DefaultAuthorizationCodeTokenResponseClient;
 import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository;
 import org.springframework.security.oauth2.client.web.DefaultOAuth2AuthorizationRequestResolver;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -53,9 +57,9 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     private void authorizationConfig(HttpSecurity http) throws Exception {
         http
                 .authorizeRequests()
-                .antMatchers("/.~~spring-boot!~/restart").anonymous()
-                .antMatchers("/", "/index", "/oauth2/**", "/.well-known/**").permitAll()
-                .antMatchers("/login-success").hasAnyAuthority("SCOPE_openid")
+                .antMatchers("/", "/index",
+                        "/oauth2/**", "/.well-known/**",
+                        "/.~~spring-boot!~/restart").permitAll()
                 .anyRequest().authenticated();
     }
 
@@ -74,5 +78,19 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
         http.oauth2ResourceServer(oauth2 -> oauth2
                 .authenticationManagerResolver(authenticationManagerResolver)
         );
+    }
+
+    @Bean
+    public CorsConfigurationSource corsConfigurationSource() {
+        CorsConfiguration configuration = new CorsConfiguration();
+
+        configuration.addAllowedOrigin("*");
+        configuration.addAllowedHeader("Authorization");
+        configuration.addAllowedMethod("*");
+        configuration.setAllowCredentials(true);
+
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        source.registerCorsConfiguration("/**", configuration);
+        return source;
     }
 }

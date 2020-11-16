@@ -51,6 +51,13 @@ public class Post {
     }
 
     public void deleteMessage(int index) {
-        messages.remove(index);
+        Message message = messages.get(index);
+        if(message.getReplies().isEmpty()){
+            messages.remove(index);
+        }else{
+            message.setWriter(null);
+            message.setMessage("deleted topic");
+        }
+
     }
 }

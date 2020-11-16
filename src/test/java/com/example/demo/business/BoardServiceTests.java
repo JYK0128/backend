@@ -95,6 +95,7 @@ public class BoardServiceTests {
         post.deleteUpload(1);
 
         assertThat(entityManager.contains(post)).isTrue();
+        assertThat(uploadRepository.findAll().size()).isEqualTo(1);
     }
 
     @Test
@@ -115,12 +116,16 @@ public class BoardServiceTests {
         Post post = postRepository.findById((long) 1).get();
         Message topic1 = Message.builder().message("topic1").writer(replier).build();
         Message topic2 = Message.builder().message("topic2").writer(replier).build();
+        Message topic3 = Message.builder().message("topic3").writer(replier).build();
+
         post.addMessage(topic1);
         post.addMessage(topic2);
+        post.addMessage(topic3);
 
         assertThat(entityManager.contains(post)).isTrue();
         assertThat(topic1.getPost()).isEqualTo(post);
         assertThat(topic2.getPost()).isEqualTo(post);
+        assertThat(topic3.getPost()).isEqualTo(post);
     }
 
     @Test
@@ -131,6 +136,7 @@ public class BoardServiceTests {
         post.deleteMessage(1);
 
         assertThat(entityManager.contains(post)).isTrue();
+        assertThat(messageRepository.findAll().size()).isEqualTo(2);
     }
 
 
@@ -145,9 +151,13 @@ public class BoardServiceTests {
         topic.addReply(reply1);
         topic.addReply(reply2);
 
+        Message reply1_1 = Message.builder().message("reply1_1").writer(writer).build();
+        reply1.addReply(reply1_1);
+
         assertThat(entityManager.contains(post)).isTrue();
         assertThat(reply1.getTopic()).isEqualTo(topic);
         assertThat(reply2.getTopic()).isEqualTo(topic);
+        assertThat(reply1_1.getTopic()).isEqualTo(reply1);
     }
 
     @Test
@@ -162,25 +172,42 @@ public class BoardServiceTests {
     }
 
     @Test
-    @Order(997)
+    @Order(9)
     @Rollback(value = false)
-    void beforeDeletePost() {
-        assertThat(uploadRepository.findAll().size()).isEqualTo(1);
-        assertThat(messageRepository.findAll().size()).isEqualTo(2);
+    void deleteTopicWhenExistReply() {
+        Post post = postRepository.findById((long) 1).get();
+        Message deletedMessage = post.getMessages().get(0);
+        post.deleteMessage(0);
+
+        assertThat(entityManager.contains(post)).isTrue();
+        assertThat(deletedMessage.getMessage()).isEqualTo("deleted topic");
+        assertThat(deletedMessage.getWriter()).isNull();
     }
 
     @Test
-    @Order(998)
+    @Order(10)
     @Rollback(value = false)
-    void deletePost() {
+    void deleteReplyWhenExistReply() {
         Post post = postRepository.findById((long) 1).get();
-        postRepository.delete(post);
+        Message topic = post.getMessages().get(0);
+        Message deletedReply = topic.getReplies().get(0);
+        topic.deleteReply(0);
+
+        assertThat(entityManager.contains(post)).isTrue();
+        assertThat(deletedReply.getMessage()).isEqualTo("deleted topic");
+        assertThat(deletedReply.getWriter()).isNull();
     }
 
     @Test
     @Order(999)
     @Rollback(value = false)
-    void afterDeletePost() {
+    void deletePost() {
+        assertThat(uploadRepository.findAll().size()).isEqualTo(1);
+        assertThat(messageRepository.findAll().size()).isEqualTo(4);
+
+        Post post = postRepository.findById((long) 1).get();
+        postRepository.delete(post);
+
         assertThat(postRepository.findAll()).isEmpty();
         assertThat(messageRepository.findAll()).isEmpty();
         assertThat(uploadRepository.findAll()).isEmpty();
