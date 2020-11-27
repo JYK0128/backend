@@ -14,7 +14,7 @@ import static org.mockito.Mockito.mock;
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 public class EUploadTest {
-    final Upload upload;
+    private final Upload upload;
 
 
     public EUploadTest() {
@@ -22,10 +22,9 @@ public class EUploadTest {
 
         this.upload = Upload.builder()
                 .id((long) 1)
-                .oriName("test.txt")
+                .filename("test.txt")
                 .uuid(UUID.randomUUID().toString())
-
-                .post(post)
+                .post_id(post.getId())
                 .build();
     }
 

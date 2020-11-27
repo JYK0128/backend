@@ -8,7 +8,6 @@ import com.example.demo.repository.board.MessageRepository;
 import com.example.demo.repository.board.PostRepository;
 import com.example.demo.repository.board.UploadRepository;
 import com.example.demo.repository.member.MemberRepository;
-import org.assertj.core.util.Lists;
 import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
@@ -16,8 +15,6 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 
 import javax.persistence.EntityManager;
-import javax.persistence.Query;
-import javax.persistence.TransactionRequiredException;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -29,14 +26,11 @@ import static org.junit.jupiter.api.Assertions.*;
 @DataJpaTest
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 public class RPostTest {
-    final EntityManager entityManager;
-    final UploadRepository uploadRepository;
-    final MemberRepository memberRepository;
-    final MessageRepository messageRepository;
-    final PostRepository postRepository;
-
-    final String emailFormat;
-    final String nickNameFormat;
+    private final EntityManager entityManager;
+    private final UploadRepository uploadRepository;
+    private final MemberRepository memberRepository;
+    private final MessageRepository messageRepository;
+    private final PostRepository postRepository;
 
 
     @Autowired
@@ -50,9 +44,6 @@ public class RPostTest {
         this.memberRepository = memberRepository;
         this.messageRepository = messageRepository;
         this.postRepository = postRepository;
-
-        this.emailFormat = "test%d@test.com";
-        this.nickNameFormat = "test%d";
     }
 
     @BeforeAll
@@ -65,9 +56,9 @@ public class RPostTest {
                         Post.builder()
                                 .tag("tag" + (i % 3))
                                 .title("title" + i)
-                                .update(LocalDateTime.now())
+                                .updated(LocalDateTime.now())
                                 .views((long) i)
-                                .content("content" + i)
+                                .contents("content" + i)
 
                                 .writer(member)
                                 .build()
@@ -76,7 +67,9 @@ public class RPostTest {
         List<Upload> uploads = uploadRepository.saveAll(
                 IntStream.range(0, 100).mapToObj(i ->
                         Upload.builder()
-                                .post(posts.get(i)).build()
+                                .filename("file" + i + ".txt")
+//                                .post(posts.get(i))
+                                .build()
                 ).collect(Collectors.toList()));
 
         List<Message> messages = messageRepository.saveAll(

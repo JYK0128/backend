@@ -1,0 +1,33 @@
+= 회원 기능
+Jinyong Kim
+:doctype: book
+:icons: font
+:source-highlighter: highlightjs
+:toc: left
+:toclevels: 4
+:sectlinks:
+:nofooter:
+
+[[create]]
+== 생성(POST)
+서버 내부에서 회원 정보 확인 / 등록
+
+[[read]]
+== 조회(GET)
+include::{snippets}/get/member/http-request.adoc[]
+
+=== 회원 목록
+include::{snippets}/get/member/request-parameters.adoc[]
+include::{snippets}/get/member/response-fields.adoc[]
+
+=== 회원 정보
+include::{snippets}/get/member/id/path-parameters.adoc[]
+include::{snippets}/get/member/id/response-fields.adoc[]
+
+[[update]]
+== 갱신(PUT)
+`+회원 세부정보 필요+`
+
+[[delete]]
+== 삭제(DELETE)
+`+회원 정보 삭제와 함께 인증서버 연동 해지+`

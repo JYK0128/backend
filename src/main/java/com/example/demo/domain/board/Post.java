@@ -13,32 +13,36 @@ import java.util.List;
 @Entity
 @NoArgsConstructor
 @AllArgsConstructor
-@Getter @Setter @Builder
+@Getter
+@Setter
+@Builder
 public class Post {
-    @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     private String tag;
     private String title;
-    private String content;
+    private String contents;
     @Builder.Default
-    private LocalDateTime update = LocalDateTime.now();
+    private LocalDateTime updated = LocalDateTime.now();
     @Builder.Default
     private Long views = 0L;
 
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @ManyToOne(optional = false)
     private Member writer;
     @Builder.Default
-    @OnDelete(action = OnDeleteAction.CASCADE)
     @OneToMany(mappedBy = "post", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OnDelete(action = OnDeleteAction.CASCADE)
     private List<Message> messages = new ArrayList<>();
     @Builder.Default
+    @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
+    @JoinColumn(name = "post_id")
     @OnDelete(action = OnDeleteAction.CASCADE)
-    @OneToMany(mappedBy = "post", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Upload> uploads = new ArrayList<>();
 
     public void addUpload(Upload upload) {
         uploads.add(upload);
-        upload.setPost(this);
+        upload.setPost_id(this.id);
     }
 
     public void addMessage(Message message) {
@@ -46,18 +50,23 @@ public class Post {
         message.setPost(this);
     }
 
-    public void deleteUpload(int index){
+    public void deleteUpload(int index) {
+        Upload upload = uploads.get(index);
         uploads.remove(index);
     }
 
     public void deleteMessage(int index) {
         Message message = messages.get(index);
-        if(message.getReplies().isEmpty()){
+        if (message.getReplies().isEmpty()) {
             messages.remove(index);
-        }else{
+        } else {
             message.setWriter(null);
             message.setMessage("deleted topic");
         }
+    }
 
+    @PreRemove
+    public void preRemove(){
+        messages.forEach(message -> message.setPost(null));
     }
 }

@@ -59,9 +59,10 @@ public class OAuthUserService {
         JsonNode userInfo = response.getBody();
 
         String email = userInfo.findPath("email").asText();
-        memberRepository.findByEmailAndProvider(email, provider).orElseGet(() ->
+        Member test = memberRepository.findByEmailAndProvider(email, provider).orElseGet(() ->
                 memberRepository.save(Member.builder().email(email).provider(provider).build()));
 
+        System.out.println(test);
         List<GrantedAuthority> grantedAuthorities = AuthorityUtils.createAuthorityList("SCOPE_openid");
 
         return User.builder()

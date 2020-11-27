@@ -17,7 +17,7 @@ import static org.mockito.Mockito.mock;
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 public class EPostTest {
-    final Post post;
+    private final Post post;
 
 
     public EPostTest() {
@@ -29,9 +29,9 @@ public class EPostTest {
                 .id((long) 1)
                 .tag("tag")
                 .title("title")
-                .update(LocalDateTime.now())
+                .updated(LocalDateTime.now())
                 .views((long) 10)
-                .content("test")
+                .contents("test")
 
                 .writer(member)
                 .messages(Lists.newArrayList())

@@ -43,6 +43,7 @@ public class OAuthConfig {
         return new InMemoryClientRegistrationRepository(registrations);
     }
 
+    // use for token endpoint in redirectUrl
     @Bean
     public OAuth2AuthorizedClientManager authorizedClientManager(
             ClientRegistrationRepository clientRegistrationRepository,

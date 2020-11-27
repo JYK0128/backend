@@ -54,7 +54,7 @@ public class MemberServiceTests {
     @Rollback(value = false)
     void beforeLeave(){
         Member member = memberRepository.findById((long) 1).get();
-        Post post = Post.builder().writer(member).tag("test").title("title").content("content").build();
+        Post post = Post.builder().writer(member).tag("test").title("title").contents("content").build();
         postRepository.save(post);
 
         assertThat(entityManager.contains(member)).isTrue();

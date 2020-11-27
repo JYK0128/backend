@@ -7,10 +7,7 @@ import com.example.demo.repository.board.MessageRepository;
 import com.example.demo.repository.board.PostRepository;
 import com.example.demo.repository.member.MemberRepository;
 import com.google.common.collect.Lists;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Nested;
-import org.junit.jupiter.api.Tag;
-import org.junit.jupiter.api.TestInstance;
+import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 
@@ -21,10 +18,10 @@ import java.util.List;
 @DataJpaTest
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 public class RMessageTest {
-    final EntityManager entityManager;
-    final MemberRepository memberRepository;
-    final PostRepository postRepository;
-    final MessageRepository messageRepository;
+    private final EntityManager entityManager;
+    private final MemberRepository memberRepository;
+    private final PostRepository postRepository;
+    private final MessageRepository messageRepository;
 
 
     @Autowired

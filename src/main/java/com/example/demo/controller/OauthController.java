@@ -10,31 +10,24 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.ResponseBody;
 
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import java.security.Principal;
 
 
 @Controller
-public class MyController {
+public class OauthController {
     OAuth2AuthorizedClientManager authorizedClientManager;
 
     @Autowired
-    MyController(OAuth2AuthorizedClientManager authorizedClientManager){
+    OauthController(OAuth2AuthorizedClientManager authorizedClientManager) {
         this.authorizedClientManager = authorizedClientManager;
-    }
-
-    @GetMapping(value = {"favicon.ico", "**/favicon.ico"})
-    @ResponseBody
-    void returnNoFavicon() {
-    }
-
-    @GetMapping(value = "{path}")
-    String getPage(@PathVariable String path) {
-        return path;
     }
 
     @GetMapping("/oauth2/code/{authServer}")
     @ResponseBody
-    private Object token(@PathVariable String authServer) {
+    private Object getToken(@PathVariable String authServer,
+                            HttpServletRequest request, HttpServletResponse response) {
         OAuth2AuthorizeRequest authorizeRequest =
                 OAuth2AuthorizeRequest.withClientRegistrationId(authServer)
                         .principal("anonymousUser")
@@ -46,7 +39,7 @@ public class MyController {
 
     @GetMapping("/oauth2/userinfo")
     @ResponseBody
-    public Object user(@AuthenticationPrincipal Principal principal) {
+    public Object getUserInfo(@AuthenticationPrincipal Principal principal) {
         return principal;
     }
 }

@@ -16,11 +16,11 @@ public class Message {
     private Long id;
     private String message;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne
     private Member writer;
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     private Post post;
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne
     private Message topic;
     @Builder.Default
     @OneToMany(mappedBy = "topic", cascade = CascadeType.ALL, orphanRemoval = true)

@@ -10,10 +10,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.test.annotation.Rollback;
 
 import javax.persistence.EntityManagerFactory;
+import java.util.List;
 import java.util.Optional;
-import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -36,14 +37,13 @@ public class RMemberTest {
 
     @BeforeAll
     void setUp() {
-        memberRepository.saveAll(
-                IntStream.range(0, 100).mapToObj(i ->
-                        Member.builder()
-                                .email(String.format(emailFormat, i))
-                                .provider(OAuthServerProvider.values()[i % 3])
-                                .build()
-                ).collect(Collectors.toList())
-        );
+        List<Member> members = IntStream.range(0, 10).mapToObj(i ->
+                Member.builder()
+                        .email(String.format(emailFormat, i))
+                        .provider(OAuthServerProvider.values()[i % 3])
+                        .build()
+        ).collect(Collectors.toList());
+        memberRepository.saveAll(members);
     }
 
     @Nested

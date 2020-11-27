@@ -18,12 +18,13 @@ import javax.persistence.EntityManager;
 import java.util.Arrays;
 
 import static org.assertj.core.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 @DataJpaTest
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 public class BoardServiceTests {
-    private EntityManager entityManager;
+    private final EntityManager entityManager;
     private final PostRepository postRepository;
     private final MemberRepository memberRepository;
     private final UploadRepository uploadRepository;
@@ -48,31 +49,35 @@ public class BoardServiceTests {
                 .email("test1@test.com")
                 .provider(OAuthServerProvider.KAKAO)
                 .build();
-
         replier = Member.builder()
                 .email("test2@test.com")
                 .provider(OAuthServerProvider.GOOGLE)
                 .build();
-
         memberRepository.saveAll(Arrays.asList(writer, replier));
 
         preDefinedPostBuilder = Post.builder()
                 .tag("tag")
                 .title("title")
-                .content("content");
+                .contents("content");
     }
 
     @Test
     @Order(1)
     @Rollback(value = false)
     void writePost() {
-        Upload upload = Upload.builder().oriName("one.txt").build();
+        Upload upload = Upload.builder().filename("one.txt").build();
+        uploadRepository.save(upload);
+
         Post post = preDefinedPostBuilder.writer(writer).build();
         post.addUpload(upload);
         postRepository.save(post);
 
+        entityManager.flush();
+        entityManager.refresh(upload);
+
         assertThat(entityManager.contains(post)).isTrue();
-        assertThat(upload.getPost()).isEqualTo(post);
+        assertThat(entityManager.contains(upload)).isTrue();
+        assertEquals(upload.getPost_id(), post.getId());
     }
 
     @Test
@@ -80,11 +85,11 @@ public class BoardServiceTests {
     @Rollback(value = false)
     void addUpload() {
         Post post = postRepository.findById((long) 1).get();
-        Upload upload = Upload.builder().oriName("two.txt").build();
+        Upload upload = Upload.builder().filename("two.txt").build();
         post.addUpload(upload);
 
         assertThat(entityManager.contains(post)).isTrue();
-        assertThat(upload.getPost()).isEqualTo(post);
+        assertEquals(upload.getPost_id(), post.getId());
     }
 
     @Test

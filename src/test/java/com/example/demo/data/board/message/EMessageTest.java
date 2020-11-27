@@ -14,8 +14,7 @@ import static org.mockito.Mockito.mock;
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 public class EMessageTest {
-    final Message message;
-
+    private final Message message;
 
     public EMessageTest() {
         Message reply = mock(Message.class);

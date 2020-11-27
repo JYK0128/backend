@@ -30,11 +30,11 @@ public class Member {
     private OAuthServerProvider provider;
 
     @Builder.Default
-    @OnDelete(action = OnDeleteAction.CASCADE)
     @OneToMany(mappedBy = "writer")
+    @OnDelete(action = OnDeleteAction.CASCADE)
     List<Message> messages = new ArrayList<>();
     @Builder.Default
-    @OnDelete(action = OnDeleteAction.CASCADE)
     @OneToMany(mappedBy = "writer")
+    @OnDelete(action = OnDeleteAction.CASCADE)
     List<Post> posts = new ArrayList<>();
 }

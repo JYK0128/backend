@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+<H1> Index of API</H1>
+<ul>
+    <li th:each="file : ${files}">
+        <H2><a th:href="@{'/docs/' + ${file}}" th:text="${file}"/></H2>
+    </li>
+</ul>
+</body>
+</html>

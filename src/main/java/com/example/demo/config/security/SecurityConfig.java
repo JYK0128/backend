@@ -57,9 +57,9 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     private void authorizationConfig(HttpSecurity http) throws Exception {
         http
                 .authorizeRequests()
-                .antMatchers("/", "/index",
-                        "/oauth2/**", "/.well-known/**",
-                        "/.~~spring-boot!~/restart").permitAll()
+                .antMatchers("/.~~spring-boot!~/restart").permitAll()
+                .antMatchers("/", "/favicon.ico", "/oauth2/**", "/docs/**").permitAll()
+                .antMatchers("/profile/**", "/member/**", "/post/**", "/message/**", "/upload/**").permitAll()
                 .anyRequest().authenticated();
     }
 
@@ -70,7 +70,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .authorizedClientService(authorizedClientService) // or authorizedClientRepository
                 .authorizationCodeGrant(codeGrant -> codeGrant
                         .authorizationRequestResolver(new DefaultOAuth2AuthorizationRequestResolver(clientRegistrationRepository, "/oauth2/authorization")) // or authorizationRequestRepository
-                        .accessTokenResponseClient(new DefaultAuthorizationCodeTokenResponseClient())
+                        .accessTokenResponseClient(new DefaultAuthorizationCodeTokenResponseClient()) // it can alter authServer token to custom token;
                 )
         );
 

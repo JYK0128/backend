@@ -11,19 +11,18 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 
 import javax.persistence.EntityManager;
-import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 @DataJpaTest
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 public class RUploadTest {
-    final EntityManager entityManager;
-    final MemberRepository memberRepository;
-    final PostRepository postRepository;
-    final UploadRepository uploadRepository;
+    private final EntityManager entityManager;
+    private final MemberRepository memberRepository;
+    private final PostRepository postRepository;
+    private final UploadRepository uploadRepository;
 
-    final String oriNameFormat;
+    private final  String oriNameFormat;
 
 
     @Autowired
@@ -44,11 +43,10 @@ public class RUploadTest {
         Member member = memberRepository.save(new Member());
         Post post = postRepository.save(Post.builder().writer(member).build());
         uploadRepository.saveAll(
-                IntStream.range(0, 100).mapToObj(i ->
+                IntStream.range(0, 10).mapToObj(i ->
                         Upload.builder()
-                                .oriName(String.format(oriNameFormat, i))
-                                .uuid(UUID.randomUUID().toString())
-                                .post(post)
+                                .filename(String.format(oriNameFormat, i))
+//                                .post(post)
                                 .build()
                 ).collect(Collectors.toList())
         );
