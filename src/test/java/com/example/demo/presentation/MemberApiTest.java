@@ -1,8 +1,8 @@
 package com.example.demo.presentation;
 
 import com.example.demo.config.security.OAuthServerProvider;
-import com.example.demo.domain.member.Member;
-import com.example.demo.repository.member.MemberRepository;
+import com.example.demo.domain.member.member.Member;
+import com.example.demo.domain.member.member.MemberRepository;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -30,12 +30,12 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @SpringBootTest
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 @ExtendWith({RestDocumentationExtension.class})
-public class MemberTest {
+public class MemberApiTest {
     private final MemberRepository memberRepository;
     private MockMvc mockMvc;
 
     @Autowired
-    MemberTest(MemberRepository memberRepository) {
+    MemberApiTest(MemberRepository memberRepository) {
         this.memberRepository = memberRepository;
     }
 

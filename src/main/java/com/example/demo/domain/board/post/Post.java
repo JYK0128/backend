@@ -1,9 +1,14 @@
-package com.example.demo.domain.board;
+package com.example.demo.domain.board.post;
 
-import com.example.demo.domain.member.Member;
+import com.example.demo.domain.board.message.Message;
+import com.example.demo.domain.board.upload.Upload;
+import com.example.demo.domain.member.member.Member;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.datatype.jsr310.deser.LocalDateTimeDeserializer;
 import lombok.*;
-import org.hibernate.annotations.OnDelete;
-import org.hibernate.annotations.OnDeleteAction;
+import org.springframework.data.annotation.CreatedBy;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import javax.persistence.*;
 import java.time.LocalDateTime;
@@ -13,9 +18,9 @@ import java.util.List;
 @Entity
 @NoArgsConstructor
 @AllArgsConstructor
-@Getter
-@Setter
-@Builder
+@Getter @Setter @Builder
+@EntityListeners({AuditingEntityListener.class, PostEventHandler.class})
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class Post {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -24,25 +29,24 @@ public class Post {
     private String title;
     private String contents;
     @Builder.Default
+    @JsonDeserialize(using = LocalDateTimeDeserializer.class)
     private LocalDateTime updated = LocalDateTime.now();
     @Builder.Default
     private Long views = 0L;
 
+    @CreatedBy
     @ManyToOne(optional = false)
     private Member writer;
     @Builder.Default
     @OneToMany(mappedBy = "post", cascade = CascadeType.ALL, orphanRemoval = true)
-    @OnDelete(action = OnDeleteAction.CASCADE)
     private List<Message> messages = new ArrayList<>();
     @Builder.Default
-    @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
-    @JoinColumn(name = "post_id")
-    @OnDelete(action = OnDeleteAction.CASCADE)
+    @OneToMany(mappedBy = "post", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Upload> uploads = new ArrayList<>();
 
     public void addUpload(Upload upload) {
         uploads.add(upload);
-        upload.setPost_id(this.id);
+        upload.setPost(this);
     }
 
     public void addMessage(Message message) {
@@ -65,8 +69,11 @@ public class Post {
         }
     }
 
-    @PreRemove
-    public void preRemove(){
-        messages.forEach(message -> message.setPost(null));
+    public void deleteMessage(Message message) {
+        messages.remove(message);
+    }
+
+    public void read() {
+        views += 1;
     }
 }

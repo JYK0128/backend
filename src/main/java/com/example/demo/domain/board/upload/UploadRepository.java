@@ -1,6 +1,5 @@
-package com.example.demo.repository.board;
+package com.example.demo.domain.board.upload;
 
-import com.example.demo.domain.board.Upload;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.rest.core.annotation.RepositoryRestResource;
 

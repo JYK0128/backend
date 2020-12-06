@@ -1,8 +1,8 @@
 package com.example.demo.data.member.member;
 
 import com.example.demo.config.security.OAuthServerProvider;
-import com.example.demo.domain.member.Member;
-import com.example.demo.repository.member.MemberRepository;
+import com.example.demo.domain.member.member.Member;
+import com.example.demo.domain.member.member.MemberRepository;
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.EnumSource;
@@ -10,7 +10,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
-import org.springframework.test.annotation.Rollback;
 
 import javax.persistence.EntityManagerFactory;
 import java.util.List;

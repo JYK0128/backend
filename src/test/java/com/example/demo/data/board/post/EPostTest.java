@@ -1,9 +1,9 @@
 package com.example.demo.data.board.post;
 
-import com.example.demo.domain.board.Message;
-import com.example.demo.domain.board.Post;
-import com.example.demo.domain.board.Upload;
-import com.example.demo.domain.member.Member;
+import com.example.demo.domain.board.message.Message;
+import com.example.demo.domain.board.post.Post;
+import com.example.demo.domain.board.upload.Upload;
+import com.example.demo.domain.member.member.Member;
 import org.assertj.core.util.Lists;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Tag;

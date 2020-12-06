@@ -1,9 +1,9 @@
 package com.example.demo.data.member.member;
 
 import com.example.demo.config.security.OAuthServerProvider;
-import com.example.demo.domain.board.Message;
-import com.example.demo.domain.board.Post;
-import com.example.demo.domain.member.Member;
+import com.example.demo.domain.board.message.Message;
+import com.example.demo.domain.board.post.Post;
+import com.example.demo.domain.member.member.Member;
 import com.google.common.collect.Lists;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Tag;

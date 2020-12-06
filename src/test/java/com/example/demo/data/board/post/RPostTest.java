@@ -1,13 +1,13 @@
 package com.example.demo.data.board.post;
 
-import com.example.demo.domain.board.Message;
-import com.example.demo.domain.board.Post;
-import com.example.demo.domain.board.Upload;
-import com.example.demo.domain.member.Member;
-import com.example.demo.repository.board.MessageRepository;
-import com.example.demo.repository.board.PostRepository;
-import com.example.demo.repository.board.UploadRepository;
-import com.example.demo.repository.member.MemberRepository;
+import com.example.demo.domain.board.message.Message;
+import com.example.demo.domain.board.post.Post;
+import com.example.demo.domain.board.upload.Upload;
+import com.example.demo.domain.member.member.Member;
+import com.example.demo.domain.board.message.MessageRepository;
+import com.example.demo.domain.board.post.PostRepository;
+import com.example.demo.domain.board.upload.UploadRepository;
+import com.example.demo.domain.member.member.MemberRepository;
 import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
@@ -68,7 +68,7 @@ public class RPostTest {
                 IntStream.range(0, 100).mapToObj(i ->
                         Upload.builder()
                                 .filename("file" + i + ".txt")
-//                                .post(posts.get(i))
+                                .post(posts.get(i))
                                 .build()
                 ).collect(Collectors.toList()));
 

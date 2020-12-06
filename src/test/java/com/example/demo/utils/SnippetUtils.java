@@ -1,4 +1,4 @@
-package com.example.demo.snippet;
+package com.example.demo.utils;
 
 import org.springframework.http.MediaType;
 import org.springframework.restdocs.operation.Operation;
@@ -10,13 +10,12 @@ import org.springframework.restdocs.request.AbstractParametersSnippet;
 import org.springframework.restdocs.request.ParameterDescriptor;
 import org.springframework.restdocs.snippet.SnippetException;
 
-import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-public class CustomSnippet {
+public class SnippetUtils {
     public static AbstractFieldsSnippet requestFieldsCustom(String name, Map<String, Object> attributes, FieldDescriptor... descriptors) {
         boolean ignoreUndocumented = false;
         List<FieldDescriptor> descriptorsList = Arrays.asList(descriptors);
@@ -51,7 +50,7 @@ public class CustomSnippet {
         };
     }
 
-    public static AbstractBodySnippet requestBodyCustom(String name, PayloadSubsectionExtractor<?> subsectionExtractor, Map<String, Object> attributes) {
+    public static AbstractBodySnippet requestBodyCustom(String name, Map<String, Object> attributes, PayloadSubsectionExtractor<?> subsectionExtractor) {
         return new AbstractBodySnippet(name, subsectionExtractor, attributes) {
             @Override
             protected byte[] getContent(Operation operation) {
@@ -65,7 +64,7 @@ public class CustomSnippet {
         };
     }
 
-    public static AbstractBodySnippet responseBodyCustom(String name, PayloadSubsectionExtractor<?> subsectionExtractor, Map<String, Object> attributes) {
+    public static AbstractBodySnippet responseBodyCustom(String name, Map<String, Object> attributes, PayloadSubsectionExtractor<?> subsectionExtractor) {
         return new AbstractBodySnippet(name, subsectionExtractor, attributes) {
             @Override
             protected byte[] getContent(Operation operation) {

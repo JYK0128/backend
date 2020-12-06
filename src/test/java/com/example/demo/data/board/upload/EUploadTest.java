@@ -1,7 +1,7 @@
 package com.example.demo.data.board.upload;
 
-import com.example.demo.domain.board.Post;
-import com.example.demo.domain.board.Upload;
+import com.example.demo.domain.board.post.Post;
+import com.example.demo.domain.board.upload.Upload;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
@@ -24,7 +24,7 @@ public class EUploadTest {
                 .id((long) 1)
                 .filename("test.txt")
                 .uuid(UUID.randomUUID().toString())
-                .post_id(post.getId())
+                .post(post)
                 .build();
     }
 

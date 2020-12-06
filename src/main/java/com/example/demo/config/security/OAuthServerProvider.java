@@ -5,6 +5,8 @@ import org.springframework.security.oauth2.core.AuthenticationMethod;
 import org.springframework.security.oauth2.core.AuthorizationGrantType;
 import org.springframework.security.oauth2.core.ClientAuthenticationMethod;
 
+import java.util.regex.Pattern;
+
 public enum OAuthServerProvider {
     GOOGLE("https://www.googleapis.com/oauth2/v3/userinfo") {
         @Override
@@ -78,4 +80,11 @@ public enum OAuthServerProvider {
     }
 
     public abstract ClientRegistration getServer();
+
+    public static OAuthServerProvider getProvider(String token) {
+        if (token.startsWith("ya29.")) return GOOGLE;
+        else if(token.startsWith("AAAAO")) return NAVER;
+        else if(Pattern.matches("^.{43}AAAF1.{6}$", token)) return KAKAO;
+        else return null;
+    }
 }

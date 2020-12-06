@@ -60,6 +60,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .antMatchers("/.~~spring-boot!~/restart").permitAll()
                 .antMatchers("/", "/favicon.ico", "/oauth2/**", "/docs/**").permitAll()
                 .antMatchers("/profile/**", "/member/**", "/post/**", "/message/**", "/upload/**").permitAll()
+                .antMatchers("/test/**").permitAll()
                 .anyRequest().authenticated();
     }
 

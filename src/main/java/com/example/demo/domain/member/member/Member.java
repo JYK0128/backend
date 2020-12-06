@@ -1,11 +1,13 @@
-package com.example.demo.domain.member;
+package com.example.demo.domain.member.member;
 
 import com.example.demo.config.security.OAuthServerProvider;
-import com.example.demo.domain.board.Message;
-import com.example.demo.domain.board.Post;
+import com.example.demo.domain.board.message.Message;
+import com.example.demo.domain.board.post.Post;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.*;
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import javax.persistence.*;
 import javax.validation.constraints.Pattern;
@@ -16,11 +18,9 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 @Getter @Setter @Builder
-@Table(
-        uniqueConstraints = {
-                @UniqueConstraint(columnNames = "email"),
-        }
-)
+@EntityListeners({AuditingEntityListener.class, MemberEventHandler.class})
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
+@Table(uniqueConstraints = {@UniqueConstraint(columnNames = "email")})
 public class Member {
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -30,11 +30,11 @@ public class Member {
     private OAuthServerProvider provider;
 
     @Builder.Default
-    @OneToMany(mappedBy = "writer")
+    @OneToMany(mappedBy = "writer", cascade = CascadeType.ALL, orphanRemoval = true)
     @OnDelete(action = OnDeleteAction.CASCADE)
     List<Message> messages = new ArrayList<>();
     @Builder.Default
-    @OneToMany(mappedBy = "writer")
+    @OneToMany(mappedBy = "writer", cascade = CascadeType.ALL, orphanRemoval = true)
     @OnDelete(action = OnDeleteAction.CASCADE)
     List<Post> posts = new ArrayList<>();
 }

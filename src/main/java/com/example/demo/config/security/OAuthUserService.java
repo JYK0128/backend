@@ -1,7 +1,7 @@
 package com.example.demo.config.security;
 
-import com.example.demo.domain.member.Member;
-import com.example.demo.repository.member.MemberRepository;
+import com.example.demo.domain.member.member.Member;
+import com.example.demo.domain.member.member.MemberRepository;
 import com.fasterxml.jackson.databind.JsonNode;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpEntity;
@@ -21,7 +21,6 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Collection;
 import java.util.List;
-import java.util.regex.Pattern;
 
 @Service
 public class OAuthUserService {
@@ -37,7 +36,13 @@ public class OAuthUserService {
             UserDetails userDetails = this.loadUserByAuthentication(authentication);
             final Collection<? extends GrantedAuthority> authorities = userDetails.getAuthorities();
 
-            return new UsernamePasswordAuthenticationToken(userDetails, authentication.getPrincipal(), authorities);
+            String email = userDetails.getUsername();
+            String token = userDetails.getPassword();
+            OAuthServerProvider provider = OAuthServerProvider.getProvider(token);
+            Member member = memberRepository.findByEmailAndProvider(email, provider).orElseGet(() ->
+                    memberRepository.save(Member.builder().email(email).provider(provider).build()));
+
+            return new UsernamePasswordAuthenticationToken(userDetails, member, authorities);
         } catch (URISyntaxException e) {
             e.printStackTrace();
             return null;
@@ -46,7 +51,7 @@ public class OAuthUserService {
 
     private UserDetails loadUserByAuthentication(Authentication authentication) throws URISyntaxException {
         String token = authentication.getPrincipal().toString();
-        OAuthServerProvider provider = getProvider(token);
+        OAuthServerProvider provider = OAuthServerProvider.getProvider(token);
         URI userInfoUri = new URI(provider.getUserInfoUri());
 
         RestTemplate restTemplate = new RestTemplate();
@@ -59,10 +64,6 @@ public class OAuthUserService {
         JsonNode userInfo = response.getBody();
 
         String email = userInfo.findPath("email").asText();
-        Member test = memberRepository.findByEmailAndProvider(email, provider).orElseGet(() ->
-                memberRepository.save(Member.builder().email(email).provider(provider).build()));
-
-        System.out.println(test);
         List<GrantedAuthority> grantedAuthorities = AuthorityUtils.createAuthorityList("SCOPE_openid");
 
         return User.builder()
@@ -70,12 +71,5 @@ public class OAuthUserService {
                 .password(token)
                 .authorities(grantedAuthorities)
                 .build();
-    }
-
-    private OAuthServerProvider getProvider(String token){
-        if (token.startsWith("ya29.")) return OAuthServerProvider.GOOGLE;
-        else if(token.startsWith("AAAAO")) return OAuthServerProvider.NAVER;
-        else if(Pattern.matches("^.{43}AAAF1.{6}$", token)) return OAuthServerProvider.KAKAO;
-        else return null;
     }
 }

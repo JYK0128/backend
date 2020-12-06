@@ -1,7 +1,10 @@
-package com.example.demo.domain.board;
+package com.example.demo.domain.board.upload;
 
+import com.example.demo.domain.board.post.Post;
 import com.example.demo.util.FileUtils;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.*;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import javax.persistence.*;
 import javax.validation.constraints.Pattern;
@@ -11,11 +14,9 @@ import java.util.UUID;
 @NoArgsConstructor
 @AllArgsConstructor
 @Getter @Setter @Builder
-@Table(
-        uniqueConstraints = {
-                @UniqueConstraint(columnNames = "uuid")
-        }
-)
+@EntityListeners({AuditingEntityListener.class, UploadEventHandler.class})
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
+@Table(uniqueConstraints = {@UniqueConstraint(columnNames = "uuid")})
 public class Upload {
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -24,7 +25,8 @@ public class Upload {
     @Pattern(regexp = "^[a-f0-9]{8}(-[a-f0-9]{4}){4}[a-f0-9]{8}$")
     @Builder.Default
     private String uuid = UUID.randomUUID().toString();
-    private Long post_id;
+    @ManyToOne
+    private Post post;
 
     @PreRemove
     public void preRemove(){

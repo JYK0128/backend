@@ -1,14 +1,14 @@
 package com.example.demo.business;
 
 import com.example.demo.config.security.OAuthServerProvider;
-import com.example.demo.domain.board.Message;
-import com.example.demo.domain.board.Post;
-import com.example.demo.domain.board.Upload;
-import com.example.demo.domain.member.Member;
-import com.example.demo.repository.board.MessageRepository;
-import com.example.demo.repository.board.PostRepository;
-import com.example.demo.repository.board.UploadRepository;
-import com.example.demo.repository.member.MemberRepository;
+import com.example.demo.domain.board.message.Message;
+import com.example.demo.domain.board.post.Post;
+import com.example.demo.domain.board.upload.Upload;
+import com.example.demo.domain.member.member.Member;
+import com.example.demo.domain.board.message.MessageRepository;
+import com.example.demo.domain.board.post.PostRepository;
+import com.example.demo.domain.board.upload.UploadRepository;
+import com.example.demo.domain.member.member.MemberRepository;
 import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
@@ -18,7 +18,6 @@ import javax.persistence.EntityManager;
 import java.util.Arrays;
 
 import static org.assertj.core.api.Assertions.*;
-import static org.junit.jupiter.api.Assertions.*;
 
 @DataJpaTest
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
@@ -73,11 +72,11 @@ public class BoardServiceTests {
         postRepository.save(post);
 
         entityManager.flush();
-        entityManager.refresh(upload);
 
         assertThat(entityManager.contains(post)).isTrue();
         assertThat(entityManager.contains(upload)).isTrue();
-        assertEquals(upload.getPost_id(), post.getId());
+        assertThat(post.getUploads()).containsExactly(upload);
+        assertThat(upload.getPost()).isEqualTo(post);
     }
 
     @Test
@@ -88,8 +87,13 @@ public class BoardServiceTests {
         Upload upload = Upload.builder().filename("two.txt").build();
         post.addUpload(upload);
 
+        entityManager.flush();
+
         assertThat(entityManager.contains(post)).isTrue();
-        assertEquals(upload.getPost_id(), post.getId());
+        assertThat(entityManager.contains(upload)).isTrue();
+        assertThat(post.getUploads()).contains(upload);
+        assertThat(post.getUploads().size()).isEqualTo(2);
+        assertThat(upload.getPost()).isEqualTo(post);
     }
 
     @Test
@@ -99,8 +103,12 @@ public class BoardServiceTests {
         Post post = postRepository.findById((long) 1).get();
         post.deleteUpload(1);
 
+        entityManager.flush();
+
         assertThat(entityManager.contains(post)).isTrue();
+        assertThat(uploadRepository.findAll()).containsExactlyElementsOf(post.getUploads());
         assertThat(uploadRepository.findAll().size()).isEqualTo(1);
+
     }
 
     @Test
@@ -109,6 +117,8 @@ public class BoardServiceTests {
     void visitPost(){
         Post post = postRepository.findById((long) 1).get();
         post.setViews(post.getViews() + 1);
+
+        entityManager.flush();
 
         assertThat(entityManager.contains(post)).isTrue();
         assertThat(post.getViews()).isEqualTo(1);
@@ -127,7 +137,13 @@ public class BoardServiceTests {
         post.addMessage(topic2);
         post.addMessage(topic3);
 
+        entityManager.flush();
+
         assertThat(entityManager.contains(post)).isTrue();
+        assertThat(entityManager.contains(topic1)).isTrue();
+        assertThat(entityManager.contains(topic2)).isTrue();
+        assertThat(entityManager.contains(topic3)).isTrue();
+        assertThat(post.getMessages()).containsExactly(topic1, topic2, topic3);
         assertThat(topic1.getPost()).isEqualTo(post);
         assertThat(topic2.getPost()).isEqualTo(post);
         assertThat(topic3.getPost()).isEqualTo(post);
@@ -138,12 +154,14 @@ public class BoardServiceTests {
     @Rollback(value = false)
     void deleteMessage() {
         Post post = postRepository.findById((long) 1).get();
-        post.deleteMessage(1);
+        post.deleteMessage(0);
+
+        entityManager.flush();
 
         assertThat(entityManager.contains(post)).isTrue();
+        assertThat(messageRepository.findAll()).containsAnyElementsOf(post.getMessages());
         assertThat(messageRepository.findAll().size()).isEqualTo(2);
     }
-
 
     @Test
     @Order(7)
@@ -159,21 +177,37 @@ public class BoardServiceTests {
         Message reply1_1 = Message.builder().message("reply1_1").writer(writer).build();
         reply1.addReply(reply1_1);
 
+        entityManager.flush();
+
         assertThat(entityManager.contains(post)).isTrue();
         assertThat(reply1.getTopic()).isEqualTo(topic);
         assertThat(reply2.getTopic()).isEqualTo(topic);
         assertThat(reply1_1.getTopic()).isEqualTo(reply1);
+
+        assertThat(reply1.getPost()).isEqualTo(post);
+        assertThat(reply2.getPost()).isEqualTo(post);
+        assertThat(reply1_1.getPost()).isEqualTo(post);
+        assertThat(messageRepository.findAll().size()).isEqualTo(5);
     }
 
     @Test
     @Order(8)
     @Rollback(value = false)
-    void deleteReply() {
+    void deleteReplyWhenNotExistReply() {
         Post post = postRepository.findById((long) 1).get();
         Message message = post.getMessages().get(0);
         message.deleteReply(1);
 
+        assertThat(post.getMessages().size()).isEqualTo(4);
+        assertThat(message.getReplies().size()).isEqualTo(1);
+
+        entityManager.flush();
+        entityManager.refresh(message);
+
         assertThat(entityManager.contains(post)).isTrue();
+        assertThat(entityManager.contains(message)).isTrue();
+        assertThat(post.getMessages().size()).isEqualTo(4);
+        assertThat(messageRepository.findAll().size()).isEqualTo(4);
     }
 
     @Test
@@ -184,9 +218,15 @@ public class BoardServiceTests {
         Message deletedMessage = post.getMessages().get(0);
         post.deleteMessage(0);
 
+        entityManager.flush();
+
         assertThat(entityManager.contains(post)).isTrue();
+        assertThat(entityManager.contains(deletedMessage)).isTrue();
         assertThat(deletedMessage.getMessage()).isEqualTo("deleted topic");
         assertThat(deletedMessage.getWriter()).isNull();
+        assertThat(deletedMessage.getPost()).isEqualTo(post);
+        assertThat(post.getMessages()).contains(deletedMessage);
+        assertThat(post.getMessages().size()).isEqualTo(4);
     }
 
     @Test
@@ -199,8 +239,13 @@ public class BoardServiceTests {
         topic.deleteReply(0);
 
         assertThat(entityManager.contains(post)).isTrue();
+        assertThat(entityManager.contains(deletedReply)).isTrue();
         assertThat(deletedReply.getMessage()).isEqualTo("deleted topic");
         assertThat(deletedReply.getWriter()).isNull();
+        assertThat(deletedReply.getReplies()).isNotEmpty();
+        assertThat(deletedReply.getPost()).isEqualTo(post);
+        assertThat(post.getMessages().size()).isEqualTo(4);
+        assertThat(memberRepository.findById(1L).get().getMessages().size()).isEqualTo(2);
     }
 
     @Test
@@ -211,10 +256,11 @@ public class BoardServiceTests {
         assertThat(messageRepository.findAll().size()).isEqualTo(4);
 
         Post post = postRepository.findById((long) 1).get();
-        postRepository.delete(post);
+        postRepository.deleteById(post.getId());
 
         assertThat(postRepository.findAll()).isEmpty();
-        assertThat(messageRepository.findAll()).isEmpty();
         assertThat(uploadRepository.findAll()).isEmpty();
+        assertThat(memberRepository.findById(1L).get().getMessages().size()).isEqualTo(0);
+        assertThat(messageRepository.findAll().size()).isEqualTo(0);
     }
 }
