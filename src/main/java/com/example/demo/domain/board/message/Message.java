@@ -6,6 +6,9 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.datatype.jsr310.deser.LocalDateTimeDeserializer;
 import lombok.*;
+import org.springframework.data.annotation.CreatedBy;
+import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import javax.persistence.*;
@@ -20,16 +23,23 @@ import java.util.List;
 @EntityListeners({AuditingEntityListener.class, MessageEventHandler.class})
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class Message {
-    @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Id @OrderBy
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+    @Column(nullable = false)
     private String message;
-    @Builder.Default
+    @CreatedDate
+    @Column(updatable = false, insertable = false)
     @JsonDeserialize(using = LocalDateTimeDeserializer.class)
-    private LocalDateTime updated = LocalDateTime.now();
+    private LocalDateTime createDate;
+    @LastModifiedDate
+    @JsonDeserialize(using = LocalDateTimeDeserializer.class)
+    private LocalDateTime modifiedDate;
 
+    @CreatedBy
     @ManyToOne
     private Member writer;
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
     private Post post;
     @ManyToOne(fetch = FetchType.LAZY)
     private Message topic;

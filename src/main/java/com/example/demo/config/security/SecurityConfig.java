@@ -1,8 +1,11 @@
 package com.example.demo.config.security;
 
+import com.example.demo.domain.member.member.Member;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.data.domain.AuditorAware;
+import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
 import org.springframework.security.authentication.AuthenticationManagerResolver;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -20,6 +23,7 @@ import javax.servlet.http.HttpServletRequest;
 
 @Configuration
 @EnableWebSecurity
+@EnableJpaAuditing
 public class SecurityConfig extends WebSecurityConfigurerAdapter {
     private ClientRegistrationRepository clientRegistrationRepository;
     private OAuth2AuthorizedClientService authorizedClientService;
@@ -93,5 +97,10 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration);
         return source;
+    }
+
+    @Bean
+    public AuditorAware<Member> auditorProvider() {
+        return new SecurityAuditorAware();
     }
 }

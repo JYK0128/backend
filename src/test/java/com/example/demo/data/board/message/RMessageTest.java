@@ -1,13 +1,16 @@
 package com.example.demo.data.board.message;
 
 import com.example.demo.domain.board.message.Message;
-import com.example.demo.domain.board.post.Post;
-import com.example.demo.domain.member.member.Member;
 import com.example.demo.domain.board.message.MessageRepository;
+import com.example.demo.domain.board.post.Post;
 import com.example.demo.domain.board.post.PostRepository;
+import com.example.demo.domain.member.member.Member;
 import com.example.demo.domain.member.member.MemberRepository;
 import com.google.common.collect.Lists;
-import org.junit.jupiter.api.*;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Nested;
+import org.junit.jupiter.api.Tag;
+import org.junit.jupiter.api.TestInstance;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 

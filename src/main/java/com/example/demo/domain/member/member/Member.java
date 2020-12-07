@@ -10,9 +10,11 @@ import org.hibernate.annotations.OnDeleteAction;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import javax.persistence.*;
+import javax.validation.constraints.Email;
 import javax.validation.constraints.Pattern;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 @Entity
 @NoArgsConstructor
@@ -20,14 +22,21 @@ import java.util.List;
 @Getter @Setter @Builder
 @EntityListeners({AuditingEntityListener.class, MemberEventHandler.class})
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
-@Table(uniqueConstraints = {@UniqueConstraint(columnNames = "email")})
-public class Member {
-    @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
+@Table(uniqueConstraints = {
+        @UniqueConstraint(columnNames = {"email", "provider"}),
+        @UniqueConstraint(columnNames = {"nickname"}),
+})
+public class Member extends MemberUserDetails {
+    @Id @OrderBy
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    @Pattern(regexp = "^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\\.[a-zA-Z0-9-.]+$")
+    @Email
     private String email;
     @Enumerated(EnumType.STRING)
     private OAuthServerProvider provider;
+    @Builder.Default
+    @Pattern(regexp = "^[\\w가-힣0-9]{2,20}$")
+    private String nickname = UUID.randomUUID().toString();
 
     @Builder.Default
     @OneToMany(mappedBy = "writer", cascade = CascadeType.ALL, orphanRemoval = true)
@@ -37,4 +46,16 @@ public class Member {
     @OneToMany(mappedBy = "writer", cascade = CascadeType.ALL, orphanRemoval = true)
     @OnDelete(action = OnDeleteAction.CASCADE)
     List<Post> posts = new ArrayList<>();
+
+    @Override
+    @Transient
+    public String getPassword() {
+        return String.format("{\"provider\" : %s, \"email\" : %s}", provider, email);
+    }
+
+    @Override
+    @Transient
+    public String getUsername() {
+        return nickname;
+    }
 }

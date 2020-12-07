@@ -11,8 +11,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.authority.AuthorityUtils;
-import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
@@ -20,7 +18,6 @@ import org.springframework.web.client.RestTemplate;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Collection;
-import java.util.List;
 
 @Service
 public class OAuthUserService {
@@ -36,13 +33,7 @@ public class OAuthUserService {
             UserDetails userDetails = this.loadUserByAuthentication(authentication);
             final Collection<? extends GrantedAuthority> authorities = userDetails.getAuthorities();
 
-            String email = userDetails.getUsername();
-            String token = userDetails.getPassword();
-            OAuthServerProvider provider = OAuthServerProvider.getProvider(token);
-            Member member = memberRepository.findByEmailAndProvider(email, provider).orElseGet(() ->
-                    memberRepository.save(Member.builder().email(email).provider(provider).build()));
-
-            return new UsernamePasswordAuthenticationToken(userDetails, member, authorities);
+            return new UsernamePasswordAuthenticationToken(userDetails, userDetails.getPassword(), authorities);
         } catch (URISyntaxException e) {
             e.printStackTrace();
             return null;
@@ -64,12 +55,8 @@ public class OAuthUserService {
         JsonNode userInfo = response.getBody();
 
         String email = userInfo.findPath("email").asText();
-        List<GrantedAuthority> grantedAuthorities = AuthorityUtils.createAuthorityList("SCOPE_openid");
-
-        return User.builder()
-                .username(email)
-                .password(token)
-                .authorities(grantedAuthorities)
-                .build();
+        Member member = memberRepository.findByEmailAndProvider(email, provider).orElseGet(() ->
+                memberRepository.save(Member.builder().email(email).provider(provider).build()));
+        return member;
     }
 }

@@ -1,12 +1,12 @@
 package com.example.demo.data.board.post;
 
 import com.example.demo.domain.board.message.Message;
-import com.example.demo.domain.board.post.Post;
-import com.example.demo.domain.board.upload.Upload;
-import com.example.demo.domain.member.member.Member;
 import com.example.demo.domain.board.message.MessageRepository;
+import com.example.demo.domain.board.post.Post;
 import com.example.demo.domain.board.post.PostRepository;
+import com.example.demo.domain.board.upload.Upload;
 import com.example.demo.domain.board.upload.UploadRepository;
+import com.example.demo.domain.member.member.Member;
 import com.example.demo.domain.member.member.MemberRepository;
 import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -56,7 +56,7 @@ public class RPostTest {
                         Post.builder()
                                 .tag("tag" + (i % 3))
                                 .title("title" + i)
-                                .updated(LocalDateTime.now())
+                                .createDate(LocalDateTime.now())
                                 .views((long) i)
                                 .contents("content" + i)
 

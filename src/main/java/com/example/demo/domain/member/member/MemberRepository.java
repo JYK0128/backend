@@ -17,6 +17,6 @@ public interface MemberRepository extends JpaRepository<Member, Long> {
 
     @Override
     @Modifying
-    @Query("delete from Member m where m.id = :#{#member.id}")
+    @Query("delete from Member m where m.id = :#{#member.id}")  // native cascade
     void delete(Member member);
 }

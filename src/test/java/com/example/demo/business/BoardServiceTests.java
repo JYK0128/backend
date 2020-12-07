@@ -2,12 +2,12 @@ package com.example.demo.business;
 
 import com.example.demo.config.security.OAuthServerProvider;
 import com.example.demo.domain.board.message.Message;
-import com.example.demo.domain.board.post.Post;
-import com.example.demo.domain.board.upload.Upload;
-import com.example.demo.domain.member.member.Member;
 import com.example.demo.domain.board.message.MessageRepository;
+import com.example.demo.domain.board.post.Post;
 import com.example.demo.domain.board.post.PostRepository;
+import com.example.demo.domain.board.upload.Upload;
 import com.example.demo.domain.board.upload.UploadRepository;
+import com.example.demo.domain.member.member.Member;
 import com.example.demo.domain.member.member.MemberRepository;
 import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Autowired;

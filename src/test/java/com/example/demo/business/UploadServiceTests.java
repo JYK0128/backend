@@ -2,10 +2,10 @@ package com.example.demo.business;
 
 import com.example.demo.config.security.OAuthServerProvider;
 import com.example.demo.domain.board.post.Post;
-import com.example.demo.domain.board.upload.Upload;
-import com.example.demo.domain.member.member.Member;
 import com.example.demo.domain.board.post.PostRepository;
+import com.example.demo.domain.board.upload.Upload;
 import com.example.demo.domain.board.upload.UploadRepository;
+import com.example.demo.domain.member.member.Member;
 import com.example.demo.domain.member.member.MemberRepository;
 import com.example.demo.util.FileUtils;
 import org.junit.jupiter.api.*;

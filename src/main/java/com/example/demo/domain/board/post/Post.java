@@ -8,6 +8,8 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.datatype.jsr310.deser.LocalDateTimeDeserializer;
 import lombok.*;
 import org.springframework.data.annotation.CreatedBy;
+import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import javax.persistence.*;
@@ -21,16 +23,21 @@ import java.util.List;
 @Getter @Setter @Builder
 @EntityListeners({AuditingEntityListener.class, PostEventHandler.class})
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
+@Cacheable(value = false)
 public class Post {
-    @Id
+    @Id @OrderBy
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     private String tag;
     private String title;
     private String contents;
-    @Builder.Default
+    @CreatedDate
+    @Column(updatable = false, insertable = false)
     @JsonDeserialize(using = LocalDateTimeDeserializer.class)
-    private LocalDateTime updated = LocalDateTime.now();
+    private LocalDateTime createDate;
+    @LastModifiedDate
+    @JsonDeserialize(using = LocalDateTimeDeserializer.class)
+    private LocalDateTime modifiedDate;
     @Builder.Default
     private Long views = 0L;
 

@@ -12,7 +12,6 @@ import org.junit.jupiter.api.TestInstance;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.hateoas.EntityModel;
 import org.springframework.hateoas.mediatype.hal.Jackson2HalModule;
 
 import javax.transaction.Transactional;
