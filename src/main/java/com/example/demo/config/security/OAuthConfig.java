@@ -18,11 +18,11 @@ import java.util.stream.Collectors;
 
 @Configuration
 public class OAuthConfig {
-    OAuthUserService oauthUserService;
+    OAuthAuthenticationManager oauthAuthenticationManager;
 
     @Autowired
-    OAuthConfig(OAuthUserService oauthUserService){
-        this.oauthUserService = oauthUserService;
+    OAuthConfig(OAuthAuthenticationManager oauthAuthenticationManager){
+        this.oauthAuthenticationManager = oauthAuthenticationManager;
     }
 
     //Authentication Server
@@ -66,6 +66,6 @@ public class OAuthConfig {
     //AuthenticationManager Resolver
     @Bean
     AuthenticationManagerResolver<HttpServletRequest> resolver() {
-        return request -> oauthUserService::authenticate;
+        return request -> oauthAuthenticationManager::authenticate;
      }
 }

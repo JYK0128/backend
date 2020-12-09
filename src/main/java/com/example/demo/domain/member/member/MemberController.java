@@ -32,7 +32,7 @@ public class MemberController extends RepositoryRestExceptionHandler {
     @RequestMapping("/member")
     Object request(HttpServletRequest request) {
         Assert.isTrue(request.getMethod().equals(RequestMethod.DELETE.toString()),
-                "The method use only \"Delete\" and \"Put\"");
+                "The method use only \"Delete\" and \"Post\"");
         return new ResponseEntity(HttpStatus.BAD_REQUEST);
     }
 
@@ -44,12 +44,12 @@ public class MemberController extends RepositoryRestExceptionHandler {
         return new ResponseEntity(HttpStatus.NO_CONTENT);
     }
 
-    @PutMapping("/member")
+    @PostMapping("/member")
     Object updateUser(PersistentEntityResourceAssembler assembler, Principal principal,
                       @RequestBody EntityModel<Member> entityModel) throws IllegalAccessException {
+        Assert.notNull(principal, "principal must be not null");
         Member oldMember = (Member) ((UsernamePasswordAuthenticationToken) principal).getPrincipal();
         Member newMember = entityModel.getContent();
-        Assert.notNull(newMember.getId(), "id must be null");
 
         for (Field field : Member.class.getDeclaredFields()) {
             field.setAccessible(true);
@@ -65,5 +65,12 @@ public class MemberController extends RepositoryRestExceptionHandler {
 
         memberRepository.save(newMember);
         return new ResponseEntity(assembler.toFullResource(newMember), HttpStatus.OK);
+    }
+
+    @GetMapping("/member")
+    Object readUser(PersistentEntityResourceAssembler assembler, Principal principal) {
+        Assert.notNull(principal, "principal must be not null");
+        Member member = (Member) ((UsernamePasswordAuthenticationToken) principal).getPrincipal();
+        return new ResponseEntity(assembler.toFullResource(member), HttpStatus.OK);
     }
 }

@@ -13,6 +13,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.util.Assert;
 import org.springframework.web.bind.annotation.*;
 
+import javax.transaction.Transactional;
 import java.lang.reflect.Field;
 import java.util.Collection;
 import java.util.List;
@@ -28,11 +29,12 @@ public class PostController extends RepositoryRestExceptionHandler {
         this.postRepository = postRepository;
     }
 
+    @Transactional
     @PostMapping("/post")
     public Object createPost(PersistentEntityResourceAssembler assembler,
                              @RequestBody EntityModel<Post> entityModel) {
         Post post = entityModel.getContent();
-        Assert.notNull(post.getId(), "id must be null");
+        Assert.isNull(post.getId(), "id must be null");
 
         List<Upload> uploads = post.getUploads();
         for (Upload upload : uploads) upload.setPost(post);
@@ -41,19 +43,21 @@ public class PostController extends RepositoryRestExceptionHandler {
         return new ResponseEntity(assembler.toFullResource(post), HttpStatus.CREATED);
     }
 
+    @Transactional
     @GetMapping("/post/{id}")
     public Object readPost(PersistentEntityResourceAssembler assembler, @PathVariable Long id){
         postRepository.readById(id);
-        Post post = postRepository.getOne(id);
+        Post post = postRepository.findById(id).get();
         return new ResponseEntity(assembler.toFullResource(post), HttpStatus.OK);
     }
 
+    @Transactional
     @PutMapping("/post/{id}")
     public Object updatePost(PersistentEntityResourceAssembler assembler,
                              @PathVariable Long id, @RequestBody EntityModel<Post> entityModel) throws IllegalAccessException, NoSuchFieldException {
         Post oldPost = postRepository.findById(id).get();
         Post newPost = entityModel.getContent();
-        Assert.notNull(newPost.getId(), "id must be null");
+        Assert.isNull(newPost.getId(), "id must be null");
 
         for (Field field : Post.class.getDeclaredFields()) {
             field.setAccessible(true);

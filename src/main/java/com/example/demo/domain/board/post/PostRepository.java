@@ -14,7 +14,6 @@ public interface PostRepository extends JpaRepository<Post, Long> {
     Page<Post> findAllByTag(String tag, Pageable pageable);
 
     @Modifying
-    @Transactional
     @Query("update Post p set p.views = p.views + 1 where p.id = :id")
     void readById(Long id);
 }

@@ -40,7 +40,7 @@ public class MessageController extends RepositoryRestExceptionHandler {
 
         Post post = message.getPost();
         message.setPost(post);
-        Message topic = message.getTopic(); //
+        Message topic = message.getTopic();
         message.setTopic(topic);
 
         messageRepository.save(message);
@@ -53,8 +53,11 @@ public class MessageController extends RepositoryRestExceptionHandler {
                                 @RequestBody EntityModel<Message> entityModel) throws IllegalAccessException {
         Message oldMessage = messageRepository.findById(id).get();
         Message newMessage = entityModel.getContent();
-        Assert.notNull(newMessage.getId(), "id must be null");
-        Assert.notNull(newMessage.getPost(), "post must be null");
+
+        Assert.isNull(newMessage.getId(), "id must be null");
+        Assert.isNull(newMessage.getPost(), "post must be null");
+        Assert.isNull(newMessage.getWriter(), "writer must be null");
+        Assert.notNull(newMessage.getMessage(), "message must not be null");
 
         for (Field field : Message.class.getDeclaredFields()) {
             field.setAccessible(true);
@@ -75,7 +78,7 @@ public class MessageController extends RepositoryRestExceptionHandler {
     @DeleteMapping({"/message/{id}"})
     public Object deleteMessage(@PathVariable Long id) {
         List<Message> batch = new ArrayList<>();
-        Message message = messageRepository.findById(id).get(); //
+        Message message = messageRepository.findById(id).get();
 
         if(message.getReplies().isEmpty()) {
             batch.add(message);

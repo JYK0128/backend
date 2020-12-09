@@ -13,6 +13,8 @@ import org.springframework.data.rest.webmvc.RepositoryRestExceptionHandler;
 import org.springframework.hateoas.CollectionModel;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.multipart.MultipartFile;
@@ -51,5 +53,12 @@ public class UploadController extends RepositoryRestExceptionHandler {
                 .collect(Collectors.toList());
 
         return new ResponseEntity(CollectionModel.of(collection), HttpStatus.CREATED);
+    }
+
+    //TODO: download file
+    @GetMapping("/upload/{id}")
+    private Object readUpload(PersistentEntityResourceAssembler assembler,
+                              @PathVariable Long id){
+        return new ResponseEntity(HttpStatus.OK);
     }
 }

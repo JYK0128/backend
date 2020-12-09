@@ -8,6 +8,7 @@ import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
@@ -20,15 +21,16 @@ import java.net.URISyntaxException;
 import java.util.Collection;
 
 @Service
-public class OAuthUserService {
+public class OAuthAuthenticationManager implements AuthenticationManager {
     MemberRepository memberRepository;
 
     @Autowired
-    OAuthUserService(MemberRepository memberRepository){
+    OAuthAuthenticationManager(MemberRepository memberRepository){
         this.memberRepository = memberRepository;
     }
 
-    Authentication authenticate(Authentication authentication) {
+    @Override
+    public Authentication authenticate(Authentication authentication) {
         try {
             UserDetails userDetails = this.loadUserByAuthentication(authentication);
             final Collection<? extends GrantedAuthority> authorities = userDetails.getAuthorities();
