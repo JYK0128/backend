@@ -30,6 +30,7 @@ public class EPostTest {
                 .tag("tag")
                 .title("title")
                 .createDate(LocalDateTime.now())
+                .modifiedDate(LocalDateTime.now())
                 .views((long) 10)
                 .contents("test")
 

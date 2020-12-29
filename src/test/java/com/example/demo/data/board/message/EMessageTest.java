@@ -9,6 +9,8 @@ import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 
+import java.time.LocalDateTime;
+
 import static org.assertj.core.api.Assertions.*;
 import static org.mockito.Mockito.mock;
 
@@ -30,6 +32,8 @@ public class EMessageTest {
                 .replies(Lists.newArrayList())
                 .post(post)
                 .writer(member)
+                .createDate(LocalDateTime.now())
+                .modifiedDate(LocalDateTime.now())
                 .build();
     }
 

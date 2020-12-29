@@ -167,7 +167,6 @@
                 <artifactId>spring-boot-maven-plugin</artifactId>
                 <configuration>
                     <excludeDevtools>false</excludeDevtools>
-                    <jvmArguments>-Xdebug -Xrunjdwp:transport=dt_socket,server=y,suspend=n,address=*:5005</jvmArguments>
                 </configuration>
             </plugin>
 

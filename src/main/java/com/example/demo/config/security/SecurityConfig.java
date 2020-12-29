@@ -6,6 +6,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.domain.AuditorAware;
 import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManagerResolver;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -62,9 +63,9 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
         http
                 .authorizeRequests()
                 .antMatchers("/.~~spring-boot!~/restart").permitAll()
-                .antMatchers("/", "/favicon.ico", "/oauth2/**", "/docs/**").permitAll()
-                .antMatchers("/profile/**", "/member/**", "/post/**", "/message/**", "/upload/**").permitAll()
-                .antMatchers("/test/**").permitAll()
+                .antMatchers("/", "/favicon.ico", "/oauth2/**", "/docs/**", "/profile/**").permitAll()
+                .antMatchers(HttpMethod.GET,"/post/**", "/message/**", "/upload/**").permitAll()
+                .antMatchers("/member/**", "/post/**", "/message/**", "/upload/**").hasAuthority(Member.AUTHORITY)
                 .anyRequest().authenticated();
     }
 
@@ -89,10 +90,23 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
 
-        configuration.addAllowedOrigin("*");
-        configuration.addAllowedHeader("Authorization");
+        configuration.addAllowedOrigin("http://localhost"); // if setAllowCredentials True, * not allowed
+//        configuration.addAllowedOrigin("https://api.jyworld.tk"); // if setAllowCredentials True, * not allowed
+        configuration.addAllowedOrigin("*"); // if setAllowCredentials True, * not allowed
+        configuration.setAllowCredentials(false);
+        //        configuration.setAllowCredentials(true);
+        configuration.addAllowedHeader("*");
         configuration.addAllowedMethod("*");
-        configuration.setAllowCredentials(true);
+        configuration.addExposedHeader("Access-Control-Allow-Headers");
+        configuration.addExposedHeader("Authorization");
+        configuration.addExposedHeader("Origin");
+        configuration.addExposedHeader("Content-Type");
+        configuration.addExposedHeader("x-Requested-with");
+        configuration.addExposedHeader("Accept");
+        configuration.addExposedHeader("Accept-Encoding");
+        configuration.addExposedHeader("X-CSRF-Token");
+
+
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration);

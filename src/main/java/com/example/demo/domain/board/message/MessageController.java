@@ -15,6 +15,7 @@ import org.springframework.util.Assert;
 import org.springframework.web.bind.annotation.*;
 
 import java.lang.reflect.Field;
+import java.security.Principal;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -35,9 +36,9 @@ public class MessageController extends RepositoryRestExceptionHandler {
     public Object createMessage(PersistentEntityResourceAssembler assembler,
                                 @RequestBody EntityModel<Message> entityModel){
         Message message = entityModel.getContent();
-        Assert.isNull(message.getId(), "id must be null");
-        Assert.notNull(message.getPost(), "post must not be null");
+        Assert.isTrue(message.isCreatable(), "message is not creatable.");
 
+        // TODO: check the logic is essential.
         Post post = message.getPost();
         message.setPost(post);
         Message topic = message.getTopic();
@@ -48,16 +49,12 @@ public class MessageController extends RepositoryRestExceptionHandler {
     }
 
     @PutMapping("/message/{id}")
-    public Object updateMessage(PersistentEntityResourceAssembler assembler,
+    public Object updateMessage(PersistentEntityResourceAssembler assembler, Principal principal,
                                 @PathVariable Long id,
                                 @RequestBody EntityModel<Message> entityModel) throws IllegalAccessException {
-        Message oldMessage = messageRepository.findById(id).get();
         Message newMessage = entityModel.getContent();
-
-        Assert.isNull(newMessage.getId(), "id must be null");
-        Assert.isNull(newMessage.getPost(), "post must be null");
-        Assert.isNull(newMessage.getWriter(), "writer must be null");
-        Assert.notNull(newMessage.getMessage(), "message must not be null");
+        Message oldMessage = messageRepository.findById(id).get();
+        Assert.isTrue(newMessage.isUpdatable(oldMessage, principal), "message is not updatable.");
 
         for (Field field : Message.class.getDeclaredFields()) {
             field.setAccessible(true);
@@ -76,10 +73,11 @@ public class MessageController extends RepositoryRestExceptionHandler {
     }
 
     @DeleteMapping({"/message/{id}"})
-    public Object deleteMessage(@PathVariable Long id) {
-        List<Message> batch = new ArrayList<>();
+    public Object deleteMessage(@PathVariable Long id, Principal principal) {
         Message message = messageRepository.findById(id).get();
+        Assert.isTrue(message.isDeletable(principal), "message is not deletable.");
 
+        List<Message> batch = new ArrayList<>();
         if(message.getReplies().isEmpty()) {
             batch.add(message);
         }else {
@@ -89,8 +87,8 @@ public class MessageController extends RepositoryRestExceptionHandler {
         }
 
         Message topic = message.getTopic();
-        while(topic.getWriter() == null && CollectionUtils
-                .isEqualCollection(topic.getReplies(), Collections.singleton(message))) {
+        while(topic != null && topic.getWriter() == null &&
+                CollectionUtils.isEqualCollection(topic.getReplies(), Collections.singleton(message))) {
             batch.add(topic);
             message = topic;
             topic = topic.getTopic();

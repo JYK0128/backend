@@ -4,6 +4,7 @@ package com.example.demo.domain.board.post;
 import com.example.demo.domain.board.upload.Upload;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.MessageSource;
+import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.rest.webmvc.PersistentEntityResourceAssembler;
 import org.springframework.data.rest.webmvc.RepositoryRestController;
 import org.springframework.data.rest.webmvc.RepositoryRestExceptionHandler;
@@ -13,8 +14,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.util.Assert;
 import org.springframework.web.bind.annotation.*;
 
-import javax.transaction.Transactional;
 import java.lang.reflect.Field;
+import java.security.Principal;
+import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.List;
 
@@ -29,12 +31,11 @@ public class PostController extends RepositoryRestExceptionHandler {
         this.postRepository = postRepository;
     }
 
-    @Transactional
     @PostMapping("/post")
-    public Object createPost(PersistentEntityResourceAssembler assembler,
+    public Object createPost(PersistentEntityResourceAssembler assembler, Principal principal,
                              @RequestBody EntityModel<Post> entityModel) {
         Post post = entityModel.getContent();
-        Assert.isNull(post.getId(), "id must be null");
+        Assert.isTrue(post.isCreatable(), "post is not creatable.");
 
         List<Upload> uploads = post.getUploads();
         for (Upload upload : uploads) upload.setPost(post);
@@ -43,7 +44,6 @@ public class PostController extends RepositoryRestExceptionHandler {
         return new ResponseEntity(assembler.toFullResource(post), HttpStatus.CREATED);
     }
 
-    @Transactional
     @GetMapping("/post/{id}")
     public Object readPost(PersistentEntityResourceAssembler assembler, @PathVariable Long id){
         postRepository.readById(id);
@@ -51,13 +51,12 @@ public class PostController extends RepositoryRestExceptionHandler {
         return new ResponseEntity(assembler.toFullResource(post), HttpStatus.OK);
     }
 
-    @Transactional
     @PutMapping("/post/{id}")
-    public Object updatePost(PersistentEntityResourceAssembler assembler,
-                             @PathVariable Long id, @RequestBody EntityModel<Post> entityModel) throws IllegalAccessException, NoSuchFieldException {
-        Post oldPost = postRepository.findById(id).get();
+    public Object updatePost(PersistentEntityResourceAssembler assembler, Principal principal,
+                             @PathVariable Long id, @RequestBody EntityModel<Post> entityModel) throws IllegalAccessException {
         Post newPost = entityModel.getContent();
-        Assert.isNull(newPost.getId(), "id must be null");
+        Post oldPost = postRepository.findById(id).get();
+        Assert.isTrue(newPost.isUpdatable(oldPost, principal), "post is not updatable.");
 
         for (Field field : Post.class.getDeclaredFields()) {
             field.setAccessible(true);
@@ -65,17 +64,30 @@ public class PostController extends RepositoryRestExceptionHandler {
             Object nVal = field.get(newPost);
 
             if (Collection.class.isAssignableFrom(field.getType())) {
-                for(Object item :(Collection) nVal){
-                    Field postField = item.getClass().getDeclaredField("post");
-                    postField.setAccessible(true);
-                    postField.set(item, newPost);
+                if(field.getName().equals("uploads")){
+                    field.set(newPost, nVal);
+                }else{
+                    field.set(newPost, oVal);
                 }
             } else {
-                if (nVal == null) field.set(newPost, oVal);
+                if (field.getAnnotation(LastModifiedDate.class) == null) {
+                    if (nVal == null) field.set(newPost, oVal);
+                }else{
+                    field.set(newPost, LocalDateTime.now());
+                }
             }
         }
 
         postRepository.save(newPost);
         return new ResponseEntity(assembler.toFullResource(newPost), HttpStatus.OK);
+    }
+
+    @DeleteMapping({"/post/{id}"})
+    public Object deletePost(@PathVariable Long id, Principal principal) {
+        Post post = postRepository.findById(id).get();
+        Assert.isTrue(post.isDeletable(principal), "post is not deletable.");
+
+        postRepository.delete(post);
+        return new ResponseEntity(HttpStatus.NO_CONTENT);
     }
 }

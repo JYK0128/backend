@@ -30,7 +30,6 @@ import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuild
 import static org.springframework.restdocs.operation.preprocess.Preprocessors.modifyUris;
 import static org.springframework.restdocs.operation.preprocess.Preprocessors.prettyPrint;
 import static org.springframework.restdocs.payload.PayloadDocumentation.*;
-import static org.springframework.restdocs.payload.PayloadDocumentation.subsectionWithPath;
 import static org.springframework.restdocs.request.RequestDocumentation.*;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
@@ -44,10 +43,8 @@ public class BoardApiTest {
     private final WebApplicationContext webApplicationContext;
 
     private final MemberRepository memberRepository;
-    private final PostRepository postRepository;
-    private final UploadRepository uploadRepository;
     private Member member;
-    private final MessageRepository messageRepository;
+    private Member hacker;
     private MockMvc mockMvc;
 
     @Autowired
@@ -56,9 +53,6 @@ public class BoardApiTest {
                  UploadRepository uploadRepository, MessageRepository messageRepository) {
         this.webApplicationContext = webApplicationContext;
         this.memberRepository = memberRepository;
-        this.postRepository = postRepository;
-        this.uploadRepository = uploadRepository;
-        this.messageRepository = messageRepository;
     }
 
     @BeforeAll
@@ -68,6 +62,11 @@ public class BoardApiTest {
                 .provider(OAuthServerProvider.GOOGLE)
                 .build();
         memberRepository.save(member);
+        hacker = Member.builder()
+                .email("test@test.com")
+                .provider(OAuthServerProvider.NAVER)
+                .build();
+        memberRepository.save(hacker);
     }
 
     @BeforeEach
@@ -95,9 +94,12 @@ public class BoardApiTest {
 
         mockMvc.perform(multipart("/upload")
                 .file(file).contentType(MediaType.MULTIPART_FORM_DATA)
-                .accept(MediaType.APPLICATION_JSON))
+                .accept(MediaType.APPLICATION_JSON)
+                .with(user(member))
+        )
                 .andExpect(status().isCreated())
                 .andDo(document("post/upload",
+                        httpRequest(),
                         requestParts(partWithName("files").description("files to upload")),
                         responseFields(
                                 fieldWithPath("_embedded.uploads[].filename").description("filename"),
@@ -124,9 +126,10 @@ public class BoardApiTest {
                         "   \"contents\" : \"test\",\n" +
                         "   \"uploads\" : [\"http://localhost/upload/1\"]\n" +
                         "}").contentType(MediaType.APPLICATION_JSON)
-                .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isCreated())
+                .accept(MediaType.APPLICATION_JSON)
+        ).andExpect(status().isCreated())
                 .andDo(document("post/post",
+                        httpRequest(),
                         requestFields(
                                 fieldWithPath("tag").description("tag"),
                                 fieldWithPath("title").description("title"),
@@ -169,16 +172,15 @@ public class BoardApiTest {
         mockMvc.perform(post("/message").with(user(member))
                 .content("{\n" +
                         "    \"message\" : \"test\",\n" +
-                        "    \"writer\" : \"http://localhost/member/1\",\n" +
                         "    \"post\" : \"http://localhost/post/1\",\n" +
                         "    \"topic\" : \"http://localhost/message/1\"\n" +
                         "}").contentType(MediaType.APPLICATION_JSON)
-                .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isCreated())
-                .andDo(document("post/reply",
+                .accept(MediaType.APPLICATION_JSON)
+        ).andExpect(status().isCreated())
+                .andDo(document("post/message",
+                        httpRequest(),
                         requestFields(
                                 fieldWithPath("message").description("message text"),
-                                fieldWithPath("writer").description("writer"),
                                 fieldWithPath("post").description("post"),
                                 fieldWithPath("topic").description("topic message")
                         ),
@@ -203,15 +205,18 @@ public class BoardApiTest {
     @Order(4)
     @Rollback(value = false)
     void read_post_list() throws Exception {
-        mockMvc.perform(get("/post").accept(MediaType.APPLICATION_JSON))
+        mockMvc.perform(get("/post")
+        )
                 .andExpect(status().isOk())
                 .andDo(document("get/post",
                         httpRequest()
                 ));
 
-        mockMvc.perform(get("/post?page=0&size=10&sort=email,asc&sort=id,desc").accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk())
+        mockMvc.perform(get("/post?page=0&size=10&sort=email,asc&sort=id,desc")
+                .accept(MediaType.APPLICATION_JSON)
+        ).andExpect(status().isOk())
                 .andDo(document("get/post",
+                        httpRequest(),
                         requestParameters(
                                 parameterWithName("page").description("page start from 0"),
                                 parameterWithName("size").description("page size"),
@@ -229,9 +234,11 @@ public class BoardApiTest {
     @Order(5)
     @Rollback(value = false)
     void read_post() throws Exception {
-        mockMvc.perform(get("/post/{id}", 1).accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk())
-                .andDo(document("get/board/id",
+        mockMvc.perform(get("/post/{id}", 1)
+                .accept(MediaType.APPLICATION_JSON)
+        ).andExpect(status().isOk())
+                .andDo(document("get/post/id",
+                        httpRequest(),
                         responseFields(
                                 fieldWithPath("tag").description("tag"),
                                 fieldWithPath("title").description("title"),
@@ -246,7 +253,8 @@ public class BoardApiTest {
                                 subsectionWithPath("_links.post").ignored().description("link to post"),
                                 subsectionWithPath("_links.writer").description("link to writer"),
                                 subsectionWithPath("_links.uploads").description("link to file list"),
-                                subsectionWithPath("_links.messages").description("link to message list")
+                                subsectionWithPath("_links.messages").description("link to message list"),
+                                subsectionWithPath("*").ignored()
                         )
                 ));
     }
@@ -255,9 +263,11 @@ public class BoardApiTest {
     @Order(6)
     @Rollback(value = false)
     void read_message() throws Exception {
-        mockMvc.perform(get("/post/{id}", 1).accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk())
-                .andDo(document("get/board/id",
+        mockMvc.perform(get("/post/{id}/messages/{idx}", 1, 1)
+                .accept(MediaType.APPLICATION_JSON)
+        ).andExpect(status().isOk())
+                .andDo(document("get/post/id/messages",
+                        httpRequest(),
                         responseFields(
                                 fieldWithPath("message").description("message text"),
                                 fieldWithPath("createDate").description("create date"),
@@ -272,6 +282,77 @@ public class BoardApiTest {
                                 subsectionWithPath("_links.post").description("link to post"),
                                 subsectionWithPath("*").ignored()
                         )
+                ));
+    }
+
+    @Test
+    @Order(7)
+    @Rollback(value = false)
+    void update_post() throws Exception {
+        mockMvc.perform(put("/post/{id}", 1).with(user(member))
+                .content("{\n" +
+                        "  \"tag\": \"title\",\n" +
+                        "  \"title\": \"title\",\n" +
+                        "  \"contents\": \"contents\",\n" +
+                        "   \"uploads\" : [\"http://localhost/upload/1\"]\n" +
+                        "}").contentType(MediaType.APPLICATION_JSON)
+                .accept(MediaType.APPLICATION_JSON)
+        ).andExpect(status().isOk())
+                .andDo(document("put/post/id",
+                        httpRequest(),
+                        requestFields(
+                                fieldWithPath("tag").description("tag"),
+                                fieldWithPath("title").description("title"),
+                                fieldWithPath("contents").description("contents"),
+                                fieldWithPath("uploads").description("file list")
+                        )
+                ));
+    }
+
+    @Test
+    @Order(8)
+    @Rollback(value = false)
+    void update_message() throws Exception {
+        mockMvc.perform(put("/message/{id}", 1).with(user(member))
+                .content("{\"message\": \"message\"}").contentType(MediaType.APPLICATION_JSON)
+                .accept(MediaType.APPLICATION_JSON)
+        ).andExpect(status().isOk())
+                .andDo(document("put/message/id",
+                        httpRequest(),
+                        requestFields(
+                                fieldWithPath("message").description("message")
+                        )
+                ));
+    }
+
+    @Test
+    @Order(997)
+    void delete_message() throws Exception {
+        mockMvc.perform(delete("/message/{id}", 1).with(user(member))
+        ).andExpect(status().isNoContent())
+                .andDo(document("delete/message/id",
+                        httpRequest()
+                ));
+    }
+
+    @Test
+    @Order(998)
+    void delete_upload() throws Exception {
+        mockMvc.perform(delete("/upload/{id}", 1).with(user(member))
+        ).andExpect(status().isNoContent())
+                .andDo(document("delete/upload/id",
+                        httpRequest()
+                ));
+    }
+
+    @Test
+    @Order(999)
+    @Rollback(value = false)
+    void delete_post() throws Exception {
+        mockMvc.perform(delete("/post/{id}", 1).with(user(member))
+        ).andExpect(status().isNoContent())
+                .andDo(document("/delete/post/id",
+                        httpRequest()
                 ));
     }
 }

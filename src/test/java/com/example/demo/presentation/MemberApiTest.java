@@ -22,15 +22,16 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 
+import static com.example.demo.utils.SnippetUtils.responseFieldsCustom;
 import static org.springframework.restdocs.http.HttpDocumentation.httpRequest;
 import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.document;
 import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.documentationConfiguration;
 import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.get;
-import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.post;
 import static org.springframework.restdocs.operation.preprocess.Preprocessors.modifyUris;
 import static org.springframework.restdocs.operation.preprocess.Preprocessors.prettyPrint;
 import static org.springframework.restdocs.payload.PayloadDocumentation.*;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @SpringBootTest
@@ -80,7 +81,7 @@ public class MemberApiTest {
     @EnumSource(OAuthServerProvider.class)
     void create_user(OAuthServerProvider provider) throws Exception {
         // signup and login
-        mockMvc.perform(get("/oauth2/authorization/" + "google"))
+        mockMvc.perform(get("/oauth2/authorization/" + provider.name().toLowerCase()))
                 .andExpect(status().is3xxRedirection())
                 .andDo(document("get/login",
                         httpRequest()
@@ -92,24 +93,30 @@ public class MemberApiTest {
         mockMvc.perform(get("/member").with(user(member)).accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andDo(document("get/member",
+                        httpRequest(),
                         responseFields(
                                 fieldWithPath("email").description("user email from auth providers"),
                                 fieldWithPath("provider").description("provider name"),
                                 fieldWithPath("nickname").description("nickname"),
+                                subsectionWithPath("_links").ignored()
+                        ),
+                        responseFieldsCustom("response-links", null,
                                 subsectionWithPath("_links.posts").description("list of posts"),
                                 subsectionWithPath("_links.messages").description("list of messages"),
-                                subsectionWithPath("_links").ignored().description("list of resource profiles")
+                                subsectionWithPath("*").ignored()
                         )
                 ));
     }
 
     @Test
     void update_user() throws Exception {
-        mockMvc.perform(post("/member").with(user(member))
+        mockMvc.perform(put("/member").with(user(member))
                 .content("{\"nickname\" : \"test\"}")
+                .contentType(MediaType.APPLICATION_JSON)
                 .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
-                .andDo(document("post/member",
+                .andDo(document("put/member",
+                        httpRequest(),
                         requestFields(
                                 fieldWithPath("nickname").description("nickname")
                         )

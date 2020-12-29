@@ -9,25 +9,34 @@ Jinyong Kim
 :nofooter:
 
 [[create]]
-== 생성(POST)
-서버 내부에서 회원 정보 확인 / 등록
+== 로그인
+- 네이버, 구글, 카카오 지원
+- API에서 로그인 시 바디에 토큰 출력
+- 프론트 구현시 별도의 클라언트 구현 필요
++
+include::{snippets}/get/login/http-request.adoc[]
 
-[[read]]
-== 조회(GET)
+
+== 개인 정보
+- 조회 응답
++
+** Request
++
 include::{snippets}/get/member/http-request.adoc[]
-
-=== 회원 목록
-include::{snippets}/get/member/request-parameters.adoc[]
+** Response
+.. 개인정보
++
 include::{snippets}/get/member/response-fields.adoc[]
+.. 게시물 정보
++
+include::{snippets}/get/member/response-links-fields.adoc[]
 
-=== 회원 정보
-include::{snippets}/get/member/id/path-parameters.adoc[]
-include::{snippets}/get/member/id/response-fields.adoc[]
-
-[[update]]
-== 갱신(PUT)
-`+회원 세부정보 필요+`
-
-[[delete]]
-== 삭제(DELETE)
-`+회원 정보 삭제와 함께 인증서버 연동 해지+`
+- 수정 요청
+** Request
++
+include::{snippets}/put/member/http-request.adoc[]
++
+include::{snippets}/put/member/request-fields.adoc[]
+- 탈퇴
++
+WARNING: 인증서버에서 연동 해지 (차후 API 지원)

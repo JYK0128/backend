@@ -3,6 +3,7 @@ package com.example.demo.domain.member.member;
 import com.example.demo.config.security.OAuthServerProvider;
 import com.example.demo.domain.board.message.Message;
 import com.example.demo.domain.board.post.Post;
+import com.example.demo.domain.board.upload.Upload;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.*;
 import org.hibernate.annotations.OnDelete;
@@ -11,7 +12,6 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import javax.persistence.*;
 import javax.validation.constraints.Email;
-import javax.validation.constraints.Pattern;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -35,7 +35,6 @@ public class Member extends MemberUserDetails {
     @Enumerated(EnumType.STRING)
     private OAuthServerProvider provider;
     @Builder.Default
-    @Pattern(regexp = "^[\\w가-힣0-9]{2,20}$")
     private String nickname = UUID.randomUUID().toString();
 
     @Builder.Default
@@ -46,6 +45,10 @@ public class Member extends MemberUserDetails {
     @OneToMany(mappedBy = "writer", cascade = CascadeType.ALL, orphanRemoval = true)
     @OnDelete(action = OnDeleteAction.CASCADE)
     List<Post> posts = new ArrayList<>();
+    @Builder.Default
+    @OneToMany(mappedBy = "uploader", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OnDelete(action = OnDeleteAction.CASCADE)
+    List<Upload> uploads = new ArrayList<>();
 
     @Override
     @Transient

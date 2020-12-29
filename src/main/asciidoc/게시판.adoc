@@ -8,47 +8,89 @@ Jinyong Kim
 :sectlinks:
 :nofooter:
 
-[[create]]
-== 생성(POST)
-=== 게시물 생성
-|===
-|종류|설명
-|`+문서+`| ...
-|`+파일+`| `+파일 목록에 있는 파일을 모두 업로드 완료 후 문서 생성+`
-|`+댓글+`| `+게시글 또는 상위 레벨의 댓글에서 댓글 생성+`
-|===
+== 게시판
+. 게시판 조회
+** Request
++
+include::{snippets}/get/post/http-request.adoc[]
++
+include::{snippets}/get/post/request-parameters.adoc[]
 
-[[read]]
-== 조회(GET)
-include::{snippets}/get/board/http-request.adoc[]
+** Response
++
+include::{snippets}/get/post/response-fields.adoc[]
 
-=== 게시물 목록
-include::{snippets}/get/board/response-fields.adoc[]
+=== 게시물
 
-=== 게시물 정보
-|===
-|종류|설명
-|`+문서+`| ...
-|`+파일 목록+`| ...
-|`+댓글 목록+`| ...
-|===
+. 게시물 등록 / 수정
++
+** Request
++
+include::{snippets}/post/post/http-request.adoc[]
++
+include::{snippets}/post/post/request-fields.adoc[]
++
+NOTE: <<_파일>> 업로드 이후 게시물 등록
+** Response
++
+include::{snippets}/post/post/response-fields.adoc[]
++
+include::{snippets}/post/post/response-links-fields.adoc[]
 
-[[update]]
-== 갱신(PUT)
-=== 게시물 갱신
-|===
-|종류|설명
-|`+문서+`| ...
-|`+파일+`| 파일 삭제 후 재생성
-|`+댓글+`| ...
-|===
+. 게시물 삭제 요청
+** Request
++
+include::{snippets}/delete/post/id/http-request.adoc[]
++
+IMPORTANT: 연관 자료 모두 삭제
 
-[[delete]]
-== 삭제(DELETE)
-=== 게시물 삭제
-|===
-|종류|설명
-|`+문서+`| ...
-|`+파일+`| ...
-|`+댓글+`| ...
-|===
+=== 댓글
+- 댓글 등록 요청
+** Request
++
+include::{snippets}/post/message/http-request.adoc[]
++
+include::{snippets}/post/message/request-fields.adoc[]
+** Response
++
+include::{snippets}/post/message/response-fields.adoc[]
++
+include::{snippets}/post/message/response-links-fields.adoc[]
+
+- 댓글 수정 요청
+** Request
++
+include::{snippets}/put/message/id/http-request.adoc[]
++
+include::{snippets}/put/message/id/request-fields.adoc[]
+
+- 댓글 삭제 요청
+** Request
++
+include::{snippets}/delete/message/id/http-request.adoc[]
++
+IMPORTANT: 답변이 있을 경우, 메시지 개체 내 유저정보와 메시지 내용이 삭제
+
+=== 파일
+- 파일 추가 요청
+** Request
++
+include::{snippets}/post/upload/http-request.adoc[]
++
+include::{snippets}/post/upload/request-parts.adoc[]
+** Response
++
+include::{snippets}/post/upload/response-fields.adoc[]
++
+include::{snippets}/post/upload/response-links-fields.adoc[]
+
+- 파일 수정 요청
++
+NOTE: 파일 삭제 후 다시 추가
+
+- 파일 삭제 요청
+** Request
++
+include::{snippets}/delete/upload/id/http-request.adoc[]
++
+WARNING: 유저 정보 없이 삭제 가능

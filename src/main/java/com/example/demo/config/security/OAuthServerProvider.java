@@ -81,10 +81,10 @@ public enum OAuthServerProvider {
 
     public abstract ClientRegistration getServer();
 
-    public static OAuthServerProvider getProvider(String token) {
+    public static OAuthServerProvider getProvider(String token) { //TODO: from "Detect pattern" to "Loop and fail"
         if (token.startsWith("ya29.")) return GOOGLE;
         else if(token.startsWith("AAAAO")) return NAVER;
-        else if(Pattern.matches("^.{43}AAAF1.{6}$", token)) return KAKAO;
+        else if(Pattern.matches("^.{43}AAA.{8}$", token)) return KAKAO;
         else return null;
     }
 }

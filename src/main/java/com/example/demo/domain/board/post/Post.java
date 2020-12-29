@@ -3,16 +3,18 @@ package com.example.demo.domain.board.post;
 import com.example.demo.domain.board.message.Message;
 import com.example.demo.domain.board.upload.Upload;
 import com.example.demo.domain.member.member.Member;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import com.fasterxml.jackson.datatype.jsr310.deser.LocalDateTimeDeserializer;
 import lombok.*;
 import org.springframework.data.annotation.CreatedBy;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.util.Assert;
 
 import javax.persistence.*;
+import java.security.Principal;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -25,18 +27,16 @@ import java.util.List;
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 @Cacheable(value = false)
 public class Post {
-    @Id @OrderBy
+    @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     private String tag;
     private String title;
     private String contents;
     @CreatedDate
-    @Column(updatable = false, insertable = false)
-    @JsonDeserialize(using = LocalDateTimeDeserializer.class)
+    @Column(updatable = false)
     private LocalDateTime createDate;
     @LastModifiedDate
-    @JsonDeserialize(using = LocalDateTimeDeserializer.class)
     private LocalDateTime modifiedDate;
     @Builder.Default
     private Long views = 0L;
@@ -46,7 +46,7 @@ public class Post {
     private Member writer;
     @Builder.Default
     @OneToMany(mappedBy = "post", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<Message> messages = new ArrayList<>();
+    private List<Message> messages = new ArrayList<>(); //TODO: Implement TreeMap for topic & message relationship
     @Builder.Default
     @OneToMany(mappedBy = "post", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Upload> uploads = new ArrayList<>();
@@ -80,7 +80,29 @@ public class Post {
         messages.remove(message);
     }
 
-    public void read() {
-        views += 1;
+    @JsonIgnore
+    public boolean isCreatable() {
+        Assert.isNull(this.id, "id must be null");
+        Assert.notNull(this.title, "title must be not null");
+        Assert.notNull(this.contents, "contents must be not null");
+        return true;
+    }
+
+    @JsonIgnore
+    public boolean isUpdatable(Post origin, Principal principal) {
+        Member writer = origin.writer;
+        Member member = (Member) ((UsernamePasswordAuthenticationToken) principal).getPrincipal();
+        Assert.isTrue(member.getId() == writer.getId(), "message must be updated by writer");
+
+        Assert.isNull(this.id, "id must be null");
+        return true;
+    }
+
+    @JsonIgnore
+    public boolean isDeletable(Principal principal){
+        Member writer = this.writer;
+        Member member = (Member) ((UsernamePasswordAuthenticationToken) principal).getPrincipal();
+        Assert.isTrue(member.getId() == writer.getId(), "message must be updated by writer");
+        return true;
     }
 }

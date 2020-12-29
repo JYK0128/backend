@@ -20,11 +20,11 @@ import java.time.LocalDateTime;
 @SpringBootTest
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
-public class ExampleTest {
+public class MapperTimeTest {
     PostRepository postRepository;
 
     @Autowired
-    ExampleTest(PostRepository postRepository){
+    MapperTimeTest(PostRepository postRepository){
         this.postRepository = postRepository;
     }
 

@@ -2,16 +2,18 @@ package com.example.demo.domain.board.message;
 
 import com.example.demo.domain.board.post.Post;
 import com.example.demo.domain.member.member.Member;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import com.fasterxml.jackson.datatype.jsr310.deser.LocalDateTimeDeserializer;
 import lombok.*;
 import org.springframework.data.annotation.CreatedBy;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.util.Assert;
 
 import javax.persistence.*;
+import java.security.Principal;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -29,11 +31,9 @@ public class Message {
     @Column(nullable = false)
     private String message;
     @CreatedDate
-    @Column(updatable = false, insertable = false)
-    @JsonDeserialize(using = LocalDateTimeDeserializer.class)
-    private LocalDateTime createDate;
+    @Column(updatable = false)
+    private LocalDateTime createDate; //TODO: Auditing when only null?
     @LastModifiedDate
-    @JsonDeserialize(using = LocalDateTimeDeserializer.class)
     private LocalDateTime modifiedDate;
 
     @CreatedBy
@@ -45,7 +45,7 @@ public class Message {
     private Message topic;
     @Builder.Default
     @OneToMany(mappedBy = "topic", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<Message> replies = new ArrayList<>();
+    private List<Message> replies = new ArrayList<>();  //TODO: Implement from List to TreeMap
 
     public void addReply(Message message) {
         replies.add(message);
@@ -62,5 +62,33 @@ public class Message {
             reply.setWriter(null);
             reply.setMessage("deleted topic");
         }
+    }
+
+    @JsonIgnore
+    public boolean isCreatable() {
+        Assert.isNull(this.id, "id must be null");
+        Assert.notNull(this.post, "post must not be null");
+        Assert.notNull(this.message, "message must not be null");
+        return true;
+    }
+
+    @JsonIgnore
+    public boolean isUpdatable(Message origin, Principal principal) {
+        Member writer = origin.writer;
+        Member member = (Member) ((UsernamePasswordAuthenticationToken) principal).getPrincipal();
+        Assert.isTrue(member.getId() == writer.getId(), "message must be updated by writer");
+
+        Assert.isNull(this.id, "id must be null");
+        Assert.isNull(this.post, "post must be null");
+        Assert.notNull(this.message, "message must not be null");
+        return true;
+    }
+
+    @JsonIgnore
+    public boolean isDeletable(Principal principal) {
+        Member writer = this.writer;
+        Member member = (Member) ((UsernamePasswordAuthenticationToken) principal).getPrincipal();
+        Assert.isTrue(member.getId() == writer.getId(), "message must be updated by writer");
+        return true;
     }
 }

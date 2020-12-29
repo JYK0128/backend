@@ -11,6 +11,8 @@ import java.util.List;
 @Getter
 public abstract class MemberUserDetails implements UserDetails {
     @Transient
+    public static final String AUTHORITY = "SCOPE_openid";
+    @Transient
     private final List<GrantedAuthority> authorities;
     @Transient
     private final boolean accountNonExpired;
@@ -22,7 +24,7 @@ public abstract class MemberUserDetails implements UserDetails {
     private final boolean enabled;
 
     MemberUserDetails(){
-        authorities = AuthorityUtils.createAuthorityList("SCOPE_openid");
+        authorities = AuthorityUtils.createAuthorityList(AUTHORITY);
         accountNonExpired = accountNonLocked = credentialsNonExpired = enabled = true;
     }
 }

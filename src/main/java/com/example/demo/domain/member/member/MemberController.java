@@ -14,11 +14,13 @@ import org.springframework.util.Assert;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.transaction.Transactional;
 import java.lang.reflect.Field;
 import java.security.Principal;
 import java.util.Collection;
 
 @RepositoryRestController
+@Transactional
 public class MemberController extends RepositoryRestExceptionHandler {
     private final MemberRepository memberRepository;
 
@@ -32,8 +34,15 @@ public class MemberController extends RepositoryRestExceptionHandler {
     @RequestMapping("/member")
     Object request(HttpServletRequest request) {
         Assert.isTrue(request.getMethod().equals(RequestMethod.DELETE.toString()),
-                "The method use only \"Delete\" and \"Post\"");
+                "The method use only \"Get\", \"Delete\" and \"Put\"");
         return new ResponseEntity(HttpStatus.BAD_REQUEST);
+    }
+
+    @GetMapping("/member")
+    Object readUser(PersistentEntityResourceAssembler assembler, Principal principal) {
+        Assert.notNull(principal, "principal must be not null");
+        Member member = (Member) ((UsernamePasswordAuthenticationToken) principal).getPrincipal();
+        return new ResponseEntity(assembler.toFullResource(member), HttpStatus.OK);
     }
 
     @DeleteMapping("/member")
@@ -44,7 +53,7 @@ public class MemberController extends RepositoryRestExceptionHandler {
         return new ResponseEntity(HttpStatus.NO_CONTENT);
     }
 
-    @PostMapping("/member")
+    @PutMapping("/member")
     Object updateUser(PersistentEntityResourceAssembler assembler, Principal principal,
                       @RequestBody EntityModel<Member> entityModel) throws IllegalAccessException {
         Assert.notNull(principal, "principal must be not null");
@@ -65,12 +74,5 @@ public class MemberController extends RepositoryRestExceptionHandler {
 
         memberRepository.save(newMember);
         return new ResponseEntity(assembler.toFullResource(newMember), HttpStatus.OK);
-    }
-
-    @GetMapping("/member")
-    Object readUser(PersistentEntityResourceAssembler assembler, Principal principal) {
-        Assert.notNull(principal, "principal must be not null");
-        Member member = (Member) ((UsernamePasswordAuthenticationToken) principal).getPrincipal();
-        return new ResponseEntity(assembler.toFullResource(member), HttpStatus.OK);
     }
 }
