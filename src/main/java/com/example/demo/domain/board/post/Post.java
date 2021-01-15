@@ -1,6 +1,6 @@
 package com.example.demo.domain.board.post;
 
-import com.example.demo.domain.board.message.Message;
+import com.example.demo.domain.board.reply.Reply;
 import com.example.demo.domain.board.upload.Upload;
 import com.example.demo.domain.member.member.Member;
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -32,7 +32,7 @@ public class Post {
     private Long id;
     private String tag;
     private String title;
-    private String contents;
+    private String content;
     @CreatedDate
     @Column(updatable = false)
     private LocalDateTime createDate;
@@ -46,7 +46,7 @@ public class Post {
     private Member writer;
     @Builder.Default
     @OneToMany(mappedBy = "post", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<Message> messages = new ArrayList<>(); //TODO: Implement TreeMap for topic & message relationship
+    private List<Reply> replies = new ArrayList<>();
     @Builder.Default
     @OneToMany(mappedBy = "post", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Upload> uploads = new ArrayList<>();
@@ -56,9 +56,9 @@ public class Post {
         upload.setPost(this);
     }
 
-    public void addMessage(Message message) {
-        messages.add(message);
-        message.setPost(this);
+    public void addReply(Reply reply) {
+        replies.add(reply);
+        reply.setPost(this);
     }
 
     public void deleteUpload(int index) {
@@ -67,24 +67,24 @@ public class Post {
     }
 
     public void deleteMessage(int index) {
-        Message message = messages.get(index);
+        Reply message = replies.get(index);
         if (message.getReplies().isEmpty()) {
-            messages.remove(index);
+            replies.remove(index);
         } else {
             message.setWriter(null);
             message.setMessage("deleted topic");
         }
     }
 
-    public void deleteMessage(Message message) {
-        messages.remove(message);
+    public void deleteMessage(Reply message) {
+        replies.remove(message);
     }
 
     @JsonIgnore
     public boolean isCreatable() {
         Assert.isNull(this.id, "id must be null");
-        Assert.notNull(this.title, "title must be not null");
-        Assert.notNull(this.contents, "contents must be not null");
+        Assert.hasText(this.title, "title must not be empty");
+        Assert.hasText(this.content, "contents must not be empty");
         return true;
     }
 
@@ -93,7 +93,6 @@ public class Post {
         Member writer = origin.writer;
         Member member = (Member) ((UsernamePasswordAuthenticationToken) principal).getPrincipal();
         Assert.isTrue(member.getId() == writer.getId(), "message must be updated by writer");
-
         Assert.isNull(this.id, "id must be null");
         return true;
     }

@@ -1,7 +1,7 @@
 package com.example.demo.data.member.member;
 
-import com.example.demo.config.security.OAuthServerProvider;
-import com.example.demo.domain.board.message.Message;
+import com.example.demo.config.security.OAuthProvider;
+import com.example.demo.domain.board.reply.Reply;
 import com.example.demo.domain.board.post.Post;
 import com.example.demo.domain.member.member.Member;
 import com.google.common.collect.Lists;
@@ -18,12 +18,12 @@ public class EMemberTest {
     final Member member;
 
     EMemberTest() {
-        Message message = mock(Message.class);
+        Reply message = mock(Reply.class);
         Post post = mock(Post.class);
         this.member = Member.builder()
                 .id((long) 1)
                 .email("test@test.com")
-                .provider(OAuthServerProvider.KAKAO)
+                .provider(OAuthProvider.KAKAO)
 
                 .posts(Lists.newArrayList(post))
                 .messages(Lists.newArrayList(message))

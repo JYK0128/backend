@@ -1,6 +1,6 @@
 package com.example.demo.business;
 
-import com.example.demo.config.security.OAuthServerProvider;
+import com.example.demo.config.security.OAuthProvider;
 import com.example.demo.domain.board.post.Post;
 import com.example.demo.domain.board.post.PostRepository;
 import com.example.demo.domain.member.member.Member;
@@ -36,7 +36,7 @@ public class MemberServiceTests {
     void setUp(){
         preDefinedMemberBuilder = Member.builder()
                 .email("test@test.com")
-                .provider(OAuthServerProvider.KAKAO);
+                .provider(OAuthProvider.KAKAO);
     }
 
     @Test
@@ -54,7 +54,7 @@ public class MemberServiceTests {
     @Rollback(value = false)
     void beforeLeave(){
         Member member = memberRepository.findById((long) 1).get();
-        Post post = Post.builder().writer(member).tag("test").title("title").contents("content").build();
+        Post post = Post.builder().writer(member).tag("test").title("title").content("content").build();
         postRepository.save(post);
 
         assertThat(entityManager.contains(member)).isTrue();

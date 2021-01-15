@@ -2,6 +2,7 @@ package com.example.demo.domain.board.upload;
 
 import com.example.demo.domain.board.post.Post;
 import com.example.demo.domain.member.member.Member;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.*;
 import org.springframework.data.annotation.CreatedBy;
@@ -36,6 +37,7 @@ public class Upload {
     @ManyToOne
     private Member uploader;
 
+    @JsonIgnore
     public boolean isDeletable(Principal principal) {
         Member member = (Member) ((UsernamePasswordAuthenticationToken) principal).getPrincipal();
         Member uploader = this.uploader;

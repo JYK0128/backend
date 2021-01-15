@@ -2,6 +2,8 @@ package com.example.demo.config.security;
 
 import com.example.demo.domain.member.member.Member;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.actuate.trace.http.HttpTraceRepository;
+import org.springframework.boot.actuate.trace.http.InMemoryHttpTraceRepository;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.domain.AuditorAware;
@@ -64,6 +66,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .authorizeRequests()
                 .antMatchers("/.~~spring-boot!~/restart").permitAll()
                 .antMatchers("/", "/favicon.ico", "/oauth2/**", "/docs/**", "/profile/**").permitAll()
+                .antMatchers("/actuator/**").permitAll()
                 .antMatchers(HttpMethod.GET,"/post/**", "/message/**", "/upload/**").permitAll()
                 .antMatchers("/member/**", "/post/**", "/message/**", "/upload/**").hasAuthority(Member.AUTHORITY)
                 .anyRequest().authenticated();
@@ -90,23 +93,19 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
 
-        configuration.addAllowedOrigin("http://localhost"); // if setAllowCredentials True, * not allowed
-//        configuration.addAllowedOrigin("https://api.jyworld.tk"); // if setAllowCredentials True, * not allowed
-        configuration.addAllowedOrigin("*"); // if setAllowCredentials True, * not allowed
+        // allow origin
+        // if setAllowCredentials True, allowedOrigin "*" not allowed
         configuration.setAllowCredentials(false);
-        //        configuration.setAllowCredentials(true);
+        configuration.addAllowedOrigin("*");
+//        configuration.addAllowedOrigin("http://localhost");
+//        configuration.addAllowedOrigin("https://api.jyworld.tk");
+
+        // allow Headers & Methods In preflight
         configuration.addAllowedHeader("*");
         configuration.addAllowedMethod("*");
-        configuration.addExposedHeader("Access-Control-Allow-Headers");
-        configuration.addExposedHeader("Authorization");
-        configuration.addExposedHeader("Origin");
-        configuration.addExposedHeader("Content-Type");
-        configuration.addExposedHeader("x-Requested-with");
-        configuration.addExposedHeader("Accept");
-        configuration.addExposedHeader("Accept-Encoding");
-        configuration.addExposedHeader("X-CSRF-Token");
 
-
+        // expose CORS-safelisted headers
+//        configuration.addExposedHeader("*");
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration);
@@ -116,5 +115,10 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     @Bean
     public AuditorAware<Member> auditorProvider() {
         return new SecurityAuditorAware();
+    }
+
+    @Bean
+    public HttpTraceRepository httpTraceRepository() {
+        return new InMemoryHttpTraceRepository();
     }
 }

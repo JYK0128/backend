@@ -1,6 +1,6 @@
 package com.example.demo.presentation;
 
-import com.example.demo.config.security.OAuthServerProvider;
+import com.example.demo.config.security.OAuthProvider;
 import com.example.demo.domain.member.member.Member;
 import com.example.demo.domain.member.member.MemberRepository;
 import org.junit.jupiter.api.BeforeAll;
@@ -54,7 +54,7 @@ public class MemberApiTest {
     public void setUp() {
         member = Member.builder()
                 .email("test@test.com")
-                .provider(OAuthServerProvider.GOOGLE)
+                .provider(OAuthProvider.GOOGLE)
                 .build();
         memberRepository.save(member);
     }
@@ -78,8 +78,8 @@ public class MemberApiTest {
     }
 
     @ParameterizedTest
-    @EnumSource(OAuthServerProvider.class)
-    void create_user(OAuthServerProvider provider) throws Exception {
+    @EnumSource(OAuthProvider.class)
+    void create_user(OAuthProvider provider) throws Exception {
         // signup and login
         mockMvc.perform(get("/oauth2/authorization/" + provider.name().toLowerCase()))
                 .andExpect(status().is3xxRedirection())
@@ -126,6 +126,12 @@ public class MemberApiTest {
     //TODO: implement revoke endpoint
     @Test
     void delete_user() throws Exception {
+        //https://nid.naver.com/oauth2.0/token?grant_type=delete&client_id=CLIENT_ID&client_secret=CLIENT_SECRET&access_token=ACCESS_TOKEN
+    }
 
+    //TODO: implement revoke endpoint
+    @Test
+    void logout_user() throws Exception {
+        // 세션에 로그인 정보를 발행하거나 쿠키로 로그인 정보를 발행하여 로그인 상태로 만들 수 있습니다.
     }
 }

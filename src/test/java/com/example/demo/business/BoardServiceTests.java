@@ -1,8 +1,8 @@
 package com.example.demo.business;
 
-import com.example.demo.config.security.OAuthServerProvider;
-import com.example.demo.domain.board.message.Message;
-import com.example.demo.domain.board.message.MessageRepository;
+import com.example.demo.config.security.OAuthProvider;
+import com.example.demo.domain.board.reply.Reply;
+import com.example.demo.domain.board.reply.ReplyRepository;
 import com.example.demo.domain.board.post.Post;
 import com.example.demo.domain.board.post.PostRepository;
 import com.example.demo.domain.board.upload.Upload;
@@ -27,37 +27,37 @@ public class BoardServiceTests {
     private final PostRepository postRepository;
     private final MemberRepository memberRepository;
     private final UploadRepository uploadRepository;
-    private final MessageRepository messageRepository;
+    private final ReplyRepository replyRepository;
     private Post.PostBuilder preDefinedPostBuilder;
 
     Member writer, replier;
 
     @Autowired
     BoardServiceTests(EntityManager entityManager, MemberRepository memberRepository,
-                      PostRepository postRepository, MessageRepository messageRepository, UploadRepository uploadRepository) {
+                      PostRepository postRepository, ReplyRepository replyRepository, UploadRepository uploadRepository) {
         this.entityManager = entityManager;
         this.postRepository = postRepository;
         this.memberRepository = memberRepository;
         this.uploadRepository = uploadRepository;
-        this.messageRepository = messageRepository;
+        this.replyRepository = replyRepository;
     }
 
     @BeforeAll
     void setUp() {
         writer = Member.builder()
                 .email("test1@test.com")
-                .provider(OAuthServerProvider.KAKAO)
+                .provider(OAuthProvider.KAKAO)
                 .build();
         replier = Member.builder()
                 .email("test2@test.com")
-                .provider(OAuthServerProvider.GOOGLE)
+                .provider(OAuthProvider.GOOGLE)
                 .build();
         memberRepository.saveAll(Arrays.asList(writer, replier));
 
         preDefinedPostBuilder = Post.builder()
                 .tag("tag")
                 .title("title")
-                .contents("content");
+                .content("content");
     }
 
     @Test
@@ -129,13 +129,13 @@ public class BoardServiceTests {
     @Rollback(value = false)
     void addMessage() {
         Post post = postRepository.findById((long) 1).get();
-        Message topic1 = Message.builder().message("topic1").writer(replier).build();
-        Message topic2 = Message.builder().message("topic2").writer(replier).build();
-        Message topic3 = Message.builder().message("topic3").writer(replier).build();
+        Reply topic1 = Reply.builder().message("topic1").writer(replier).build();
+        Reply topic2 = Reply.builder().message("topic2").writer(replier).build();
+        Reply topic3 = Reply.builder().message("topic3").writer(replier).build();
 
-        post.addMessage(topic1);
-        post.addMessage(topic2);
-        post.addMessage(topic3);
+        post.addReply(topic1);
+        post.addReply(topic2);
+        post.addReply(topic3);
 
         entityManager.flush();
 
@@ -143,7 +143,7 @@ public class BoardServiceTests {
         assertThat(entityManager.contains(topic1)).isTrue();
         assertThat(entityManager.contains(topic2)).isTrue();
         assertThat(entityManager.contains(topic3)).isTrue();
-        assertThat(post.getMessages()).containsExactly(topic1, topic2, topic3);
+        assertThat(post.getReplies()).containsExactly(topic1, topic2, topic3);
         assertThat(topic1.getPost()).isEqualTo(post);
         assertThat(topic2.getPost()).isEqualTo(post);
         assertThat(topic3.getPost()).isEqualTo(post);
@@ -159,8 +159,8 @@ public class BoardServiceTests {
         entityManager.flush();
 
         assertThat(entityManager.contains(post)).isTrue();
-        assertThat(messageRepository.findAll()).containsAnyElementsOf(post.getMessages());
-        assertThat(messageRepository.findAll().size()).isEqualTo(2);
+        assertThat(replyRepository.findAll()).containsAnyElementsOf(post.getReplies());
+        assertThat(replyRepository.findAll().size()).isEqualTo(2);
     }
 
     @Test
@@ -168,13 +168,13 @@ public class BoardServiceTests {
     @Rollback(value = false)
     void addReply() {
         Post post = postRepository.findById((long) 1).get();
-        Message topic = post.getMessages().get(0);
-        Message reply1 = Message.builder().message("reply1").writer(writer).build();
-        Message reply2 = Message.builder().message("reply2").writer(writer).build();
+        Reply topic = post.getReplies().get(0);
+        Reply reply1 = Reply.builder().message("reply1").writer(writer).build();
+        Reply reply2 = Reply.builder().message("reply2").writer(writer).build();
         topic.addReply(reply1);
         topic.addReply(reply2);
 
-        Message reply1_1 = Message.builder().message("reply1_1").writer(writer).build();
+        Reply reply1_1 = Reply.builder().message("reply1_1").writer(writer).build();
         reply1.addReply(reply1_1);
 
         entityManager.flush();
@@ -187,7 +187,7 @@ public class BoardServiceTests {
         assertThat(reply1.getPost()).isEqualTo(post);
         assertThat(reply2.getPost()).isEqualTo(post);
         assertThat(reply1_1.getPost()).isEqualTo(post);
-        assertThat(messageRepository.findAll().size()).isEqualTo(5);
+        assertThat(replyRepository.findAll().size()).isEqualTo(5);
     }
 
     @Test
@@ -195,10 +195,10 @@ public class BoardServiceTests {
     @Rollback(value = false)
     void deleteReplyWhenNotExistReply() {
         Post post = postRepository.findById((long) 1).get();
-        Message message = post.getMessages().get(0);
+        Reply message = post.getReplies().get(0);
         message.deleteReply(1);
 
-        assertThat(post.getMessages().size()).isEqualTo(4);
+        assertThat(post.getReplies().size()).isEqualTo(4);
         assertThat(message.getReplies().size()).isEqualTo(1);
 
         entityManager.flush();
@@ -206,8 +206,8 @@ public class BoardServiceTests {
 
         assertThat(entityManager.contains(post)).isTrue();
         assertThat(entityManager.contains(message)).isTrue();
-        assertThat(post.getMessages().size()).isEqualTo(4);
-        assertThat(messageRepository.findAll().size()).isEqualTo(4);
+        assertThat(post.getReplies().size()).isEqualTo(4);
+        assertThat(replyRepository.findAll().size()).isEqualTo(4);
     }
 
     @Test
@@ -215,7 +215,7 @@ public class BoardServiceTests {
     @Rollback(value = false)
     void deleteTopicWhenExistReply() {
         Post post = postRepository.findById((long) 1).get();
-        Message deletedMessage = post.getMessages().get(0);
+        Reply deletedMessage = post.getReplies().get(0);
         post.deleteMessage(0);
 
         entityManager.flush();
@@ -225,8 +225,8 @@ public class BoardServiceTests {
         assertThat(deletedMessage.getMessage()).isEqualTo("deleted topic");
         assertThat(deletedMessage.getWriter()).isNull();
         assertThat(deletedMessage.getPost()).isEqualTo(post);
-        assertThat(post.getMessages()).contains(deletedMessage);
-        assertThat(post.getMessages().size()).isEqualTo(4);
+        assertThat(post.getReplies()).contains(deletedMessage);
+        assertThat(post.getReplies().size()).isEqualTo(4);
     }
 
     @Test
@@ -234,8 +234,8 @@ public class BoardServiceTests {
     @Rollback(value = false)
     void deleteReplyWhenExistReply() {
         Post post = postRepository.findById((long) 1).get();
-        Message topic = post.getMessages().get(0);
-        Message deletedReply = topic.getReplies().get(0);
+        Reply topic = post.getReplies().get(0);
+        Reply deletedReply = topic.getReplies().get(0);
         topic.deleteReply(0);
 
         assertThat(entityManager.contains(post)).isTrue();
@@ -244,7 +244,7 @@ public class BoardServiceTests {
         assertThat(deletedReply.getWriter()).isNull();
         assertThat(deletedReply.getReplies()).isNotEmpty();
         assertThat(deletedReply.getPost()).isEqualTo(post);
-        assertThat(post.getMessages().size()).isEqualTo(4);
+        assertThat(post.getReplies().size()).isEqualTo(4);
         assertThat(memberRepository.findById(1L).get().getMessages().size()).isEqualTo(2);
     }
 
@@ -253,7 +253,7 @@ public class BoardServiceTests {
     @Rollback(value = false)
     void deletePost() {
         assertThat(uploadRepository.findAll().size()).isEqualTo(1);
-        assertThat(messageRepository.findAll().size()).isEqualTo(4);
+        assertThat(replyRepository.findAll().size()).isEqualTo(4);
 
         Post post = postRepository.findById((long) 1).get();
         postRepository.deleteById(post.getId());
@@ -261,6 +261,6 @@ public class BoardServiceTests {
         assertThat(postRepository.findAll()).isEmpty();
         assertThat(uploadRepository.findAll()).isEmpty();
         assertThat(memberRepository.findById(1L).get().getMessages().size()).isEqualTo(0);
-        assertThat(messageRepository.findAll().size()).isEqualTo(0);
+        assertThat(replyRepository.findAll().size()).isEqualTo(0);
     }
 }

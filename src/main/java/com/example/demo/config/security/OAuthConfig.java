@@ -36,8 +36,8 @@ public class OAuthConfig {
     //Client Repository
     @Bean
     public ClientRegistrationRepository clientRegistrationRepository() {
-        List<ClientRegistration> registrations = Arrays.stream(OAuthServerProvider.values())
-                .map(OAuthServerProvider::getServer)
+        List<ClientRegistration> registrations = Arrays.stream(OAuthProvider.values())
+                .map(OAuthProvider::getServer)
                 .collect(Collectors.toList());
 
         return new InMemoryClientRegistrationRepository(registrations);
@@ -64,6 +64,7 @@ public class OAuthConfig {
 
     //ResourceServer
     //AuthenticationManager Resolver
+    //TODO: function for issuing session & cookie
     @Bean
     AuthenticationManagerResolver<HttpServletRequest> resolver() {
         return request -> oauthAuthenticationManager::authenticate;

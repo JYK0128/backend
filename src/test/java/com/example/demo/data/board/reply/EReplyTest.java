@@ -1,6 +1,6 @@
-package com.example.demo.data.board.message;
+package com.example.demo.data.board.reply;
 
-import com.example.demo.domain.board.message.Message;
+import com.example.demo.domain.board.reply.Reply;
 import com.example.demo.domain.board.post.Post;
 import com.example.demo.domain.member.member.Member;
 import org.assertj.core.util.Lists;
@@ -15,16 +15,16 @@ import static org.assertj.core.api.Assertions.*;
 import static org.mockito.Mockito.mock;
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
-public class EMessageTest {
-    private final Message message;
+public class EReplyTest {
+    private final Reply message;
 
-    public EMessageTest() {
-        Message reply = mock(Message.class);
-        Message topic = mock(Message.class);
+    public EReplyTest() {
+        Reply reply = mock(Reply.class);
+        Reply topic = mock(Reply.class);
         Member member = mock(Member.class);
         Post post = mock(Post.class);
 
-        this.message = Message.builder()
+        this.message = Reply.builder()
                 .id((long) 1)
                 .message("test")
 

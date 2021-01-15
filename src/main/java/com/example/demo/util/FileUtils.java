@@ -1,11 +1,6 @@
 package com.example.demo.util;
 
 import com.example.demo.domain.board.upload.Upload;
-import org.springframework.core.io.FileSystemResource;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
 import org.springframework.util.Assert;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -23,20 +18,8 @@ public class FileUtils {
         return upload;
     }
 
-    public static ResponseEntity download(Upload upload) throws IOException{
-        String fileName = upload.getFilename();
-        String uuid = upload.getUuid();
-        File file = new File(fileDir + uuid);
-        FileSystemResource resource = new FileSystemResource(file);
-
-        HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(MediaType.APPLICATION_OCTET_STREAM);
-        headers.setContentLength(file.length());
-        headers.set(HttpHeaders.CONTENT_DISPOSITION,
-                "attachment; filename=" + fileName);
-        headers.setContentDispositionFormData("attachment", fileName);
-
-        return new ResponseEntity(resource, headers, HttpStatus.OK);
+    public static File getFile(String uuid) {
+        return new File(fileDir + uuid);
     }
 
     public static void checkDir(){

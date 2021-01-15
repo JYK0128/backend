@@ -1,7 +1,7 @@
 package com.example.demo.data.board.post;
 
-import com.example.demo.domain.board.message.Message;
-import com.example.demo.domain.board.message.MessageRepository;
+import com.example.demo.domain.board.reply.Reply;
+import com.example.demo.domain.board.reply.ReplyRepository;
 import com.example.demo.domain.board.post.Post;
 import com.example.demo.domain.board.post.PostRepository;
 import com.example.demo.domain.board.upload.Upload;
@@ -29,7 +29,7 @@ public class RPostTest {
     private final EntityManager entityManager;
     private final UploadRepository uploadRepository;
     private final MemberRepository memberRepository;
-    private final MessageRepository messageRepository;
+    private final ReplyRepository replyRepository;
     private final PostRepository postRepository;
 
 
@@ -37,12 +37,12 @@ public class RPostTest {
     RPostTest(EntityManager entityManager,
               UploadRepository uploadRepository,
               MemberRepository memberRepository,
-              MessageRepository messageRepository,
+              ReplyRepository replyRepository,
               PostRepository postRepository) {
         this.entityManager = entityManager;
         this.uploadRepository = uploadRepository;
         this.memberRepository = memberRepository;
-        this.messageRepository = messageRepository;
+        this.replyRepository = replyRepository;
         this.postRepository = postRepository;
     }
 
@@ -58,7 +58,7 @@ public class RPostTest {
                                 .title("title" + i)
                                 .createDate(LocalDateTime.now())
                                 .views((long) i)
-                                .contents("content" + i)
+                                .content("content" + i)
 
                                 .writer(member)
                                 .build()
@@ -72,9 +72,9 @@ public class RPostTest {
                                 .build()
                 ).collect(Collectors.toList()));
 
-        List<Message> messages = messageRepository.saveAll(
+        List<Reply> messages = replyRepository.saveAll(
                 IntStream.range(0, 100).mapToObj(i ->
-                        Message.builder()
+                        Reply.builder()
                                 .post(posts.get(i))
                                 .writer(replier)
                                 .build()
@@ -84,16 +84,6 @@ public class RPostTest {
     @Nested
     @Tag("query")
     class Query_that {
-        @Test
-        void select_all_by_tag(){
-            int page = 1;
-            int size = 10;
-            PageRequest pageRequest = PageRequest.of(page, size);
-            Page<Post> posts = postRepository.findAllByTag("tag1", pageRequest);
 
-            assertThat(posts).allSatisfy(post ->
-                    assertEquals(post.getTag(), "tag1")
-            );
-        }
     }
 }

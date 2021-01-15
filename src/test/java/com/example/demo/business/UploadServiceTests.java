@@ -1,6 +1,6 @@
 package com.example.demo.business;
 
-import com.example.demo.config.security.OAuthServerProvider;
+import com.example.demo.config.security.OAuthProvider;
 import com.example.demo.domain.board.post.Post;
 import com.example.demo.domain.board.post.PostRepository;
 import com.example.demo.domain.board.upload.Upload;
@@ -45,7 +45,7 @@ public class UploadServiceTests {
     void setUp() {
         Member member = Member.builder()
                 .email("test@test.com")
-                .provider(OAuthServerProvider.GOOGLE)
+                .provider(OAuthProvider.GOOGLE)
                 .build();
         memberRepository.save(member);
     }
@@ -73,7 +73,7 @@ public class UploadServiceTests {
                 .writer(member)
                 .tag("test")
                 .title("test")
-                .contents("test").build();
+                .content("test").build();
         post.addUpload(upload);
         postRepository.save(post);
 

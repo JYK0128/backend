@@ -1,7 +1,7 @@
 package com.example.demo.presentation;
 
-import com.example.demo.config.security.OAuthServerProvider;
-import com.example.demo.domain.board.message.MessageRepository;
+import com.example.demo.config.security.OAuthProvider;
+import com.example.demo.domain.board.reply.ReplyRepository;
 import com.example.demo.domain.board.post.PostRepository;
 import com.example.demo.domain.board.upload.UploadRepository;
 import com.example.demo.domain.member.member.Member;
@@ -50,7 +50,7 @@ public class BoardApiTest {
     @Autowired
     BoardApiTest(WebApplicationContext webApplicationContext,
                  MemberRepository memberRepository, PostRepository postRepository,
-                 UploadRepository uploadRepository, MessageRepository messageRepository) {
+                 UploadRepository uploadRepository, ReplyRepository replyRepository) {
         this.webApplicationContext = webApplicationContext;
         this.memberRepository = memberRepository;
     }
@@ -59,12 +59,12 @@ public class BoardApiTest {
     public void setUp() {
         member = Member.builder()
                 .email("test@test.com")
-                .provider(OAuthServerProvider.GOOGLE)
+                .provider(OAuthProvider.GOOGLE)
                 .build();
         memberRepository.save(member);
         hacker = Member.builder()
                 .email("test@test.com")
-                .provider(OAuthServerProvider.NAVER)
+                .provider(OAuthProvider.NAVER)
                 .build();
         memberRepository.save(hacker);
     }
@@ -123,7 +123,7 @@ public class BoardApiTest {
                 .content("{\n" +
                         "   \"tag\" : \"test\",\n" +
                         "   \"title\" : \"test\",\n" +
-                        "   \"contents\" : \"test\",\n" +
+                        "   \"content\" : \"test\",\n" +
                         "   \"uploads\" : [\"http://localhost/upload/1\"]\n" +
                         "}").contentType(MediaType.APPLICATION_JSON)
                 .accept(MediaType.APPLICATION_JSON)
@@ -133,13 +133,13 @@ public class BoardApiTest {
                         requestFields(
                                 fieldWithPath("tag").description("tag"),
                                 fieldWithPath("title").description("title"),
-                                fieldWithPath("contents").description("contents"),
-                                fieldWithPath("uploads").description("file list")
+                                fieldWithPath("content").description("content"),
+                                fieldWithPath("uploads").description("file list").optional()
                         ),
                         responseFields(
                                 fieldWithPath("tag").description("tag"),
                                 fieldWithPath("title").description("title"),
-                                fieldWithPath("contents").description("contents"),
+                                fieldWithPath("content").description("content"),
                                 fieldWithPath("views").description("views"),
                                 fieldWithPath("createDate").description("created date"),
                                 fieldWithPath("modifiedDate").description("modified date"),
@@ -150,7 +150,7 @@ public class BoardApiTest {
                                 subsectionWithPath("_links.post").ignored().description("link to post"),
                                 subsectionWithPath("_links.writer").description("link to writer"),
                                 subsectionWithPath("_links.uploads").description("link to file list"),
-                                subsectionWithPath("_links.messages").description("link to message list"),
+                                subsectionWithPath("_links.replies").description("link to message list"),
                                 subsectionWithPath("*").ignored()
                         )
                 ));
@@ -159,8 +159,8 @@ public class BoardApiTest {
     @Test
     @Order(3)
     @Rollback(value = false)
-    void create_message() throws Exception {
-        mockMvc.perform(post("/message").with(user(member))
+    void create_reply() throws Exception {
+        mockMvc.perform(post("/reply").with(user(member))
                 .content("{\n" +
                         "   \"message\" : \"test\",\n" +
                         "   \"post\" : \"http://localhost/post/1\",\n" +
@@ -169,7 +169,7 @@ public class BoardApiTest {
                 .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isCreated());
 
-        mockMvc.perform(post("/message").with(user(member))
+        mockMvc.perform(post("/reply").with(user(member))
                 .content("{\n" +
                         "    \"message\" : \"test\",\n" +
                         "    \"post\" : \"http://localhost/post/1\",\n" +
@@ -177,7 +177,7 @@ public class BoardApiTest {
                         "}").contentType(MediaType.APPLICATION_JSON)
                 .accept(MediaType.APPLICATION_JSON)
         ).andExpect(status().isCreated())
-                .andDo(document("post/message",
+                .andDo(document("post/reply",
                         httpRequest(),
                         requestFields(
                                 fieldWithPath("message").description("message text"),
@@ -192,7 +192,7 @@ public class BoardApiTest {
                         ),
                         responseFieldsCustom("response-links", null,
                                 subsectionWithPath("_links.self").description("link to self"),
-                                subsectionWithPath("_links.message").ignored().description("link to message"),
+                                subsectionWithPath("_links.reply").ignored().description("link to reply"),
                                 subsectionWithPath("_links.topic").description("link to topic"),
                                 subsectionWithPath("_links.writer").description("link to writer"),
                                 subsectionWithPath("_links.post").description("link to post"),
@@ -242,7 +242,7 @@ public class BoardApiTest {
                         responseFields(
                                 fieldWithPath("tag").description("tag"),
                                 fieldWithPath("title").description("title"),
-                                fieldWithPath("contents").description("contents"),
+                                fieldWithPath("content").description("content"),
                                 fieldWithPath("views").description("views"),
                                 fieldWithPath("createDate").description("created date"),
                                 fieldWithPath("modifiedDate").description("modified date"),
@@ -253,7 +253,7 @@ public class BoardApiTest {
                                 subsectionWithPath("_links.post").ignored().description("link to post"),
                                 subsectionWithPath("_links.writer").description("link to writer"),
                                 subsectionWithPath("_links.uploads").description("link to file list"),
-                                subsectionWithPath("_links.messages").description("link to message list"),
+                                subsectionWithPath("_links.replies").description("link to message list"),
                                 subsectionWithPath("*").ignored()
                         )
                 ));
@@ -262,21 +262,21 @@ public class BoardApiTest {
     @Test
     @Order(6)
     @Rollback(value = false)
-    void read_message() throws Exception {
-        mockMvc.perform(get("/post/{id}/messages/{idx}", 1, 1)
+    void read_replies() throws Exception {
+        mockMvc.perform(get("/post/{id}/replies/{idx}", 1, 1)
                 .accept(MediaType.APPLICATION_JSON)
         ).andExpect(status().isOk())
-                .andDo(document("get/post/id/messages",
+                .andDo(document("get/post/id/replies",
                         httpRequest(),
                         responseFields(
-                                fieldWithPath("message").description("message text"),
+                                fieldWithPath("message").description("reply text"),
                                 fieldWithPath("createDate").description("create date"),
                                 fieldWithPath("modifiedDate").description("modified date"),
                                 subsectionWithPath("_links").ignored()
                         ),
                         responseFieldsCustom("response-links", null,
                                 subsectionWithPath("_links.self").description("link to self"),
-                                subsectionWithPath("_links.message").ignored().description("link to message"),
+                                subsectionWithPath("_links.reply").ignored().description("link to reply"),
                                 subsectionWithPath("_links.topic").description("link to topic"),
                                 subsectionWithPath("_links.writer").description("link to writer"),
                                 subsectionWithPath("_links.post").description("link to post"),
@@ -293,7 +293,7 @@ public class BoardApiTest {
                 .content("{\n" +
                         "  \"tag\": \"title\",\n" +
                         "  \"title\": \"title\",\n" +
-                        "  \"contents\": \"contents\",\n" +
+                        "  \"content\": \"content\",\n" +
                         "   \"uploads\" : [\"http://localhost/upload/1\"]\n" +
                         "}").contentType(MediaType.APPLICATION_JSON)
                 .accept(MediaType.APPLICATION_JSON)
@@ -303,8 +303,8 @@ public class BoardApiTest {
                         requestFields(
                                 fieldWithPath("tag").description("tag"),
                                 fieldWithPath("title").description("title"),
-                                fieldWithPath("contents").description("contents"),
-                                fieldWithPath("uploads").description("file list")
+                                fieldWithPath("content").description("content"),
+                                fieldWithPath("uploads").description("file list").optional()
                         )
                 ));
     }
@@ -312,12 +312,12 @@ public class BoardApiTest {
     @Test
     @Order(8)
     @Rollback(value = false)
-    void update_message() throws Exception {
-        mockMvc.perform(put("/message/{id}", 1).with(user(member))
-                .content("{\"message\": \"message\"}").contentType(MediaType.APPLICATION_JSON)
+    void update_reply() throws Exception {
+        mockMvc.perform(put("/reply/{id}", 1).with(user(member))
+                .content("{\"message\": \"reply\"}").contentType(MediaType.APPLICATION_JSON)
                 .accept(MediaType.APPLICATION_JSON)
         ).andExpect(status().isOk())
-                .andDo(document("put/message/id",
+                .andDo(document("put/reply/id",
                         httpRequest(),
                         requestFields(
                                 fieldWithPath("message").description("message")
@@ -327,10 +327,10 @@ public class BoardApiTest {
 
     @Test
     @Order(997)
-    void delete_message() throws Exception {
-        mockMvc.perform(delete("/message/{id}", 1).with(user(member))
+    void delete_reply() throws Exception {
+        mockMvc.perform(delete("/reply/{id}", 1).with(user(member))
         ).andExpect(status().isNoContent())
-                .andDo(document("delete/message/id",
+                .andDo(document("delete/reply/id",
                         httpRequest()
                 ));
     }

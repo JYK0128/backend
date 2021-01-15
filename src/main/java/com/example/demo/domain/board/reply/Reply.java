@@ -1,4 +1,4 @@
-package com.example.demo.domain.board.message;
+package com.example.demo.domain.board.reply;
 
 import com.example.demo.domain.board.post.Post;
 import com.example.demo.domain.member.member.Member;
@@ -22,9 +22,9 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 @Getter @Setter @Builder
-@EntityListeners({AuditingEntityListener.class, MessageEventHandler.class})
+@EntityListeners({AuditingEntityListener.class, ReplyEventHandler.class})
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
-public class Message {
+public class Reply {
     @Id @OrderBy
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -32,7 +32,7 @@ public class Message {
     private String message;
     @CreatedDate
     @Column(updatable = false)
-    private LocalDateTime createDate; //TODO: Auditing when only null?
+    private LocalDateTime createDate;
     @LastModifiedDate
     private LocalDateTime modifiedDate;
 
@@ -42,19 +42,19 @@ public class Message {
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     private Post post;
     @ManyToOne(fetch = FetchType.LAZY)
-    private Message topic;
+    private Reply topic;
     @Builder.Default
     @OneToMany(mappedBy = "topic", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<Message> replies = new ArrayList<>();  //TODO: Implement from List to TreeMap
+    private List<Reply> replies = new ArrayList<>();  //TODO: OneToMany 자료구조 개선(TreeMap)
 
-    public void addReply(Message message) {
-        replies.add(message);
-        message.setTopic(this);
-        message.setPost(this.post);
+    public void addReply(Reply reply) {
+        replies.add(reply);
+        reply.setTopic(this);
+        reply.setPost(this.post);
     }
 
     public void deleteReply(int index) {
-        Message reply = replies.get(index);
+        Reply reply = replies.get(index);
         if(reply.getReplies().isEmpty()){
             replies.remove(index);
             reply.getPost().deleteMessage(reply);
@@ -73,7 +73,7 @@ public class Message {
     }
 
     @JsonIgnore
-    public boolean isUpdatable(Message origin, Principal principal) {
+    public boolean isUpdatable(Reply origin, Principal principal) {
         Member writer = origin.writer;
         Member member = (Member) ((UsernamePasswordAuthenticationToken) principal).getPrincipal();
         Assert.isTrue(member.getId() == writer.getId(), "message must be updated by writer");

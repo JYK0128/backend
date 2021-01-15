@@ -44,7 +44,7 @@ public class OAuthAuthenticationManager implements AuthenticationManager {
 
     private UserDetails loadUserByAuthentication(Authentication authentication) throws URISyntaxException {
         String token = authentication.getPrincipal().toString();
-        OAuthServerProvider provider = OAuthServerProvider.getProvider(token);
+        OAuthProvider provider = OAuthProvider.getProvider(token);
         URI userInfoUri = new URI(provider.getUserInfoUri());
 
         RestTemplate restTemplate = new RestTemplate();

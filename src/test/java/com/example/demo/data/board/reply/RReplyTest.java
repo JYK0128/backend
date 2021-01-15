@@ -1,7 +1,7 @@
-package com.example.demo.data.board.message;
+package com.example.demo.data.board.reply;
 
-import com.example.demo.domain.board.message.Message;
-import com.example.demo.domain.board.message.MessageRepository;
+import com.example.demo.domain.board.reply.Reply;
+import com.example.demo.domain.board.reply.ReplyRepository;
 import com.example.demo.domain.board.post.Post;
 import com.example.demo.domain.board.post.PostRepository;
 import com.example.demo.domain.member.member.Member;
@@ -20,21 +20,21 @@ import java.util.List;
 
 @DataJpaTest
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
-public class RMessageTest {
+public class RReplyTest {
     private final EntityManager entityManager;
     private final MemberRepository memberRepository;
     private final PostRepository postRepository;
-    private final MessageRepository messageRepository;
+    private final ReplyRepository replyRepository;
 
 
     @Autowired
-    RMessageTest(EntityManager entityManager,
-                 PostRepository postRepository,
-                 MemberRepository memberRepository,
-                 MessageRepository messageRepository) {
+    RReplyTest(EntityManager entityManager,
+               PostRepository postRepository,
+               MemberRepository memberRepository,
+               ReplyRepository replyRepository) {
         this.entityManager = entityManager;
         this.postRepository = postRepository;
-        this.messageRepository = messageRepository;
+        this.replyRepository = replyRepository;
         this.memberRepository = memberRepository;
     }
 
@@ -45,25 +45,25 @@ public class RMessageTest {
         Post post = Post.builder().writer(member).build();
         post = postRepository.save(post);
 
-        Message l1 = null;
-        Message l2 = null;
-        Message l3 = null;
-        List<Message> messages = new ArrayList<>();
+        Reply l1 = null;
+        Reply l2 = null;
+        Reply l3 = null;
+        List<Reply> messages = new ArrayList<>();
 
         for (int i = 0; i<10; i++){
-            Message.MessageBuilder messageBuilder = Message.builder()
+            Reply.ReplyBuilder replyBuilder = Reply.builder()
                     .post(post)
                     .writer(replier)
                     .message("message" + i);
 
             switch (i%3){
                 case 0: {
-                    l1 = messageBuilder.build();
+                    l1 = replyBuilder.build();
                     messages.add(l1);
                     break;
                 }
                 case 1: {
-                    l2 = messageBuilder
+                    l2 = replyBuilder
                             .topic(l1)
                             .build();
                     l1.setReplies(Lists.newArrayList(l2));
@@ -71,7 +71,7 @@ public class RMessageTest {
                     break;
                 }
                 case 2: {
-                    l3 = messageBuilder
+                    l3 = replyBuilder
                             .topic(l2)
                             .build();
                     l2.setReplies(Lists.newArrayList(l3));
@@ -81,7 +81,7 @@ public class RMessageTest {
             }
         }
 
-        messageRepository.saveAll(messages);
+        replyRepository.saveAll(messages);
     }
 
     @Nested

@@ -46,7 +46,7 @@ public class PostController extends RepositoryRestExceptionHandler {
 
     @GetMapping("/post/{id}")
     public Object readPost(PersistentEntityResourceAssembler assembler, @PathVariable Long id){
-        postRepository.readById(id);
+        postRepository.increaseView(id);
         Post post = postRepository.findById(id).get();
         return new ResponseEntity(assembler.toFullResource(post), HttpStatus.OK);
     }

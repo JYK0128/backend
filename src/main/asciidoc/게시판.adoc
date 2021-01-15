@@ -37,7 +37,7 @@ include::{snippets}/post/post/response-fields.adoc[]
 +
 include::{snippets}/post/post/response-links-fields.adoc[]
 
-. 게시물 삭제 요청
+. 게시물 삭제
 ** Request
 +
 include::{snippets}/delete/post/id/http-request.adoc[]
@@ -45,34 +45,36 @@ include::{snippets}/delete/post/id/http-request.adoc[]
 IMPORTANT: 연관 자료 모두 삭제
 
 === 댓글
-- 댓글 등록 요청
+- 댓글 등록
 ** Request
 +
-include::{snippets}/post/message/http-request.adoc[]
+include::{snippets}/post/reply/http-request.adoc[]
 +
-include::{snippets}/post/message/request-fields.adoc[]
+include::{snippets}/post/reply/request-fields.adoc[]
 ** Response
 +
-include::{snippets}/post/message/response-fields.adoc[]
+include::{snippets}/post/reply/response-fields.adoc[]
 +
-include::{snippets}/post/message/response-links-fields.adoc[]
+include::{snippets}/post/reply/response-links-fields.adoc[]
 
-- 댓글 수정 요청
+- 댓글 수정
 ** Request
 +
-include::{snippets}/put/message/id/http-request.adoc[]
+include::{snippets}/put/reply/id/http-request.adoc[]
 +
-include::{snippets}/put/message/id/request-fields.adoc[]
+include::{snippets}/put/reply/id/request-fields.adoc[]
 
-- 댓글 삭제 요청
+- 댓글 삭제
 ** Request
 +
-include::{snippets}/delete/message/id/http-request.adoc[]
+include::{snippets}/delete/reply/id/http-request.adoc[]
 +
-IMPORTANT: 답변이 있을 경우, 메시지 개체 내 유저정보와 메시지 내용이 삭제
+[%hardbreaks]
+IMPORTANT: 답변이 없을 경우 메시지 삭제,
+그 외의 경우 유저정보 및 메시지 내용 삭제
 
 === 파일
-- 파일 추가 요청
+- 파일 추가
 ** Request
 +
 include::{snippets}/post/upload/http-request.adoc[]
@@ -84,13 +86,11 @@ include::{snippets}/post/upload/response-fields.adoc[]
 +
 include::{snippets}/post/upload/response-links-fields.adoc[]
 
-- 파일 수정 요청
+- 파일 수정
 +
 NOTE: 파일 삭제 후 다시 추가
 
-- 파일 삭제 요청
+- 파일 삭제
 ** Request
 +
 include::{snippets}/delete/upload/id/http-request.adoc[]
-+
-WARNING: 유저 정보 없이 삭제 가능

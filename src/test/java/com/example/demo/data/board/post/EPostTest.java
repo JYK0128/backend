@@ -1,6 +1,6 @@
 package com.example.demo.data.board.post;
 
-import com.example.demo.domain.board.message.Message;
+import com.example.demo.domain.board.reply.Reply;
 import com.example.demo.domain.board.post.Post;
 import com.example.demo.domain.board.upload.Upload;
 import com.example.demo.domain.member.member.Member;
@@ -22,7 +22,7 @@ public class EPostTest {
 
     public EPostTest() {
         Upload upload = mock(Upload.class);
-        Message message = mock(Message.class);
+        Reply message = mock(Reply.class);
         Member member = mock(Member.class);
 
         this.post = Post.builder()
@@ -32,10 +32,10 @@ public class EPostTest {
                 .createDate(LocalDateTime.now())
                 .modifiedDate(LocalDateTime.now())
                 .views((long) 10)
-                .contents("test")
+                .content("test")
 
                 .writer(member)
-                .messages(Lists.newArrayList())
+                .replies(Lists.newArrayList())
                 .uploads(Lists.newArrayList())
                 .build();
     }

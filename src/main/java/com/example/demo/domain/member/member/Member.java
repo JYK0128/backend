@@ -1,7 +1,7 @@
 package com.example.demo.domain.member.member;
 
-import com.example.demo.config.security.OAuthServerProvider;
-import com.example.demo.domain.board.message.Message;
+import com.example.demo.config.security.OAuthProvider;
+import com.example.demo.domain.board.reply.Reply;
 import com.example.demo.domain.board.post.Post;
 import com.example.demo.domain.board.upload.Upload;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
@@ -33,14 +33,14 @@ public class Member extends MemberUserDetails {
     @Email
     private String email;
     @Enumerated(EnumType.STRING)
-    private OAuthServerProvider provider;
+    private OAuthProvider provider;
     @Builder.Default
     private String nickname = UUID.randomUUID().toString();
 
     @Builder.Default
     @OneToMany(mappedBy = "writer", cascade = CascadeType.ALL, orphanRemoval = true)
     @OnDelete(action = OnDeleteAction.CASCADE)
-    List<Message> messages = new ArrayList<>();
+    List<Reply> messages = new ArrayList<>();
     @Builder.Default
     @OneToMany(mappedBy = "writer", cascade = CascadeType.ALL, orphanRemoval = true)
     @OnDelete(action = OnDeleteAction.CASCADE)

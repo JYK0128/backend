@@ -7,7 +7,7 @@ import org.springframework.security.oauth2.core.ClientAuthenticationMethod;
 
 import java.util.regex.Pattern;
 
-public enum OAuthServerProvider {
+public enum OAuthProvider {
     GOOGLE("https://www.googleapis.com/oauth2/v3/userinfo") {
         @Override
         public ClientRegistration getServer() {
@@ -71,7 +71,7 @@ public enum OAuthServerProvider {
     };
 
     private final String userInfoUri;
-    OAuthServerProvider(String userInfoUri){
+    OAuthProvider(String userInfoUri){
         this.userInfoUri = userInfoUri;
     }
 
@@ -81,7 +81,7 @@ public enum OAuthServerProvider {
 
     public abstract ClientRegistration getServer();
 
-    public static OAuthServerProvider getProvider(String token) { //TODO: from "Detect pattern" to "Loop and fail"
+    public static OAuthProvider getProvider(String token) { //TODO: from "Detect pattern" to "Loop with success" or new pattern
         if (token.startsWith("ya29.")) return GOOGLE;
         else if(token.startsWith("AAAAO")) return NAVER;
         else if(Pattern.matches("^.{43}AAA.{8}$", token)) return KAKAO;
