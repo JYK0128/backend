@@ -1,13 +1,18 @@
 package com.example.demo.domain.board.post;
 
 
+import com.example.demo.domain.board.reply.Reply;
 import com.example.demo.domain.board.upload.Upload;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.MessageSource;
 import org.springframework.data.annotation.LastModifiedDate;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.rest.webmvc.PersistentEntityResourceAssembler;
 import org.springframework.data.rest.webmvc.RepositoryRestController;
 import org.springframework.data.rest.webmvc.RepositoryRestExceptionHandler;
+import org.springframework.data.web.PageableDefault;
+import org.springframework.data.web.PagedResourcesAssembler;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -31,8 +36,17 @@ public class PostController extends RepositoryRestExceptionHandler {
         this.postRepository = postRepository;
     }
 
+    //TODO: writer nickname into Property but not Link
+    @GetMapping({"/post"})
+    public Object getPosts(PersistentEntityResourceAssembler entityAssembler,
+                           PagedResourcesAssembler pagedAssembler,
+                           @PageableDefault Pageable pageable) {
+        Page<Post> posts = postRepository.findAll(pageable);
+        return new ResponseEntity(pagedAssembler.toModel(posts, entityAssembler), HttpStatus.OK);
+    }
+
     @PostMapping("/post")
-    public Object createPost(PersistentEntityResourceAssembler assembler, Principal principal,
+    public Object createPost(PersistentEntityResourceAssembler assembler,
                              @RequestBody EntityModel<Post> entityModel) {
         Post post = entityModel.getContent();
         Assert.isTrue(post.isCreatable(), "post is not creatable.");
@@ -45,15 +59,16 @@ public class PostController extends RepositoryRestExceptionHandler {
     }
 
     @GetMapping("/post/{id}")
-    public Object readPost(PersistentEntityResourceAssembler assembler, @PathVariable Long id){
+    public Object readPost(PersistentEntityResourceAssembler assembler,
+                           @PathVariable Long id) {
         postRepository.increaseView(id);
         Post post = postRepository.findById(id).get();
         return new ResponseEntity(assembler.toFullResource(post), HttpStatus.OK);
     }
 
     @PutMapping("/post/{id}")
-    public Object updatePost(PersistentEntityResourceAssembler assembler, Principal principal,
-                             @PathVariable Long id, @RequestBody EntityModel<Post> entityModel) throws IllegalAccessException {
+    public Object updatePost(PersistentEntityResourceAssembler assembler,
+                             Principal principal, @PathVariable Long id, @RequestBody EntityModel<Post> entityModel) throws IllegalAccessException {
         Post newPost = entityModel.getContent();
         Post oldPost = postRepository.findById(id).get();
         Assert.isTrue(newPost.isUpdatable(oldPost, principal), "post is not updatable.");
@@ -64,15 +79,15 @@ public class PostController extends RepositoryRestExceptionHandler {
             Object nVal = field.get(newPost);
 
             if (Collection.class.isAssignableFrom(field.getType())) {
-                if(field.getName().equals("uploads")){
+                if (field.getName().equals("uploads")) {
                     field.set(newPost, nVal);
-                }else{
+                } else {
                     field.set(newPost, oVal);
                 }
             } else {
                 if (field.getAnnotation(LastModifiedDate.class) == null) {
                     if (nVal == null) field.set(newPost, oVal);
-                }else{
+                } else {
                     field.set(newPost, LocalDateTime.now());
                 }
             }
@@ -89,5 +104,13 @@ public class PostController extends RepositoryRestExceptionHandler {
 
         postRepository.delete(post);
         return new ResponseEntity(HttpStatus.NO_CONTENT);
+    }
+
+    @GetMapping({"/post/{id}/replies"})
+    public Object getReplies(PersistentEntityResourceAssembler entityAssembler,
+                             PagedResourcesAssembler pagedAssembler,
+                             @PathVariable Long id, @PageableDefault Pageable pageable) {
+        Page<Reply> replies = postRepository.findAllRepliesById(id, pageable);
+        return new ResponseEntity(pagedAssembler.toModel(replies, entityAssembler), HttpStatus.OK);
     }
 }

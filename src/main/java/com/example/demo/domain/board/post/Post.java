@@ -34,9 +34,10 @@ public class Post {
     private String title;
     private String content;
     @CreatedDate
-    @Column(updatable = false)
+    @Column(name = "create_date", updatable = false)
     private LocalDateTime createDate;
     @LastModifiedDate
+    @Column(name = "modified_date")
     private LocalDateTime modifiedDate;
     @Builder.Default
     private Long views = 0L;

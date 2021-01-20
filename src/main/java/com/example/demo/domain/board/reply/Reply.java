@@ -31,13 +31,14 @@ public class Reply {
     @Column(nullable = false)
     private String message;
     @CreatedDate
-    @Column(updatable = false)
+    @Column(name="create_date", updatable = false)
     private LocalDateTime createDate;
     @LastModifiedDate
+    @Column(name = "modified_date")
     private LocalDateTime modifiedDate;
 
     @CreatedBy
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
     private Member writer;
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     private Post post;
