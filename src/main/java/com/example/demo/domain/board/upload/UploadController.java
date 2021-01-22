@@ -9,6 +9,7 @@ import org.springframework.data.rest.webmvc.PersistentEntityResourceAssembler;
 import org.springframework.data.rest.webmvc.RepositoryRestController;
 import org.springframework.data.rest.webmvc.RepositoryRestExceptionHandler;
 import org.springframework.hateoas.CollectionModel;
+import org.springframework.http.ContentDisposition;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -17,9 +18,10 @@ import org.springframework.util.FileCopyUtils;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.*;
-import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.security.Principal;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -56,7 +58,8 @@ public class UploadController extends RepositoryRestExceptionHandler {
     }
 
     @GetMapping("/upload/{id}")
-    private void readUpload(@PathVariable Long id, HttpServletResponse response) throws IOException {
+    private Object readUpload(@PathVariable Long id,
+                              HttpServletRequest request, HttpServletResponse response) throws IOException {
         Upload upload = uploadRepository.findById(id).get();
         String filename = upload.getFilename();
         String uuid = upload.getUuid();
@@ -64,17 +67,22 @@ public class UploadController extends RepositoryRestExceptionHandler {
 
         InputStream in = new FileInputStream(file);
         OutputStream out = response.getOutputStream();
+        ContentDisposition contentDisposition = ContentDisposition
+                .builder("attachment")
+                .filename(filename, StandardCharsets.UTF_8)
+                .build();
 
+        response.setHeader("Content-Disposition", contentDisposition.toString());
         response.setContentType(MediaType.APPLICATION_OCTET_STREAM.toString());
         response.setContentLengthLong(file.length());
-        response.setHeader("Content-Disposition",
-                String.format("attachment;filename=\"%1$s\";" +
-                        "filename*=\"UTF-8''%1$s\";", URLEncoder.encode(filename, "EUC-KR")));
+        response.addHeader("Content-Disposition", contentDisposition.toString());
 
         FileCopyUtils.copy(in, out);
         in.close();
         out.flush();
         out.close();
+
+        return new ResponseEntity(HttpStatus.OK);
     }
 
     @DeleteMapping({"/upload/{id}"})
